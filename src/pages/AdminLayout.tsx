@@ -44,11 +44,18 @@ export default function AdminLayout() {
             const res = await fetch(`${API_BASE}/api/cache`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
             });
+
+            if (res.status === 401) {
+                toast.error('Session expired. Please log in again.', { id: toastId });
+                handleLogout();
+                return;
+            }
+
             if (!res.ok) throw new Error('Cache publish failed');
+
             const data = await res.json();
             toast.success(`Cache published! ${data.cachedAt ? new Date(data.cachedAt).toLocaleTimeString() : ''}`, { id: toastId });
         } catch (err) {

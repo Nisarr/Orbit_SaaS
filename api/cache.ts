@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import db from './lib/db.js';
-import { isAuthorized } from './lib/auth.js';
 import { setCorsHeaders } from './lib/cors.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -29,6 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // POST: Build and save cache
         if (req.method === 'POST') {
+            const { isAuthorized } = await import('./lib/auth.js');
             if (!isAuthorized(req)) {
                 return res.status(401).json({ error: 'Unauthorized' });
             }

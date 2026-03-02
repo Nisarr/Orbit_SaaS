@@ -43,11 +43,11 @@
             ]
         },
         {
-            "source": "/(.*).png",
+            "source": "/(.*)\\.(png|jpg|jpeg|webp|svg|gif|mp4)",
             "headers": [
                 {
                     "key": "Cache-Control",
-                    "value": "public, max-age=86400"
+                    "value": "public, max-age=86400, s-maxage=31536000, immutable"
                 }
             ]
         },
