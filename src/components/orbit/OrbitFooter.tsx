@@ -68,7 +68,7 @@ export function OrbitFooter() {
         <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-6 sm:p-12">
 
           {/* ─── Main Grid ─── */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-[8fr_7fr_9fr] gap-5 md:gap-5 items-start">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-[8fr_7fr_9fr] gap-5 md:gap-5">
 
             {/* ── Col 1: Brand + Contact Info (full width on mobile) ── */}
             <div className="col-span-2 sm:col-span-2 md:col-span-1 flex flex-col md:h-[340px] space-y-4 rounded-2xl border border-border/40 p-6">
@@ -155,55 +155,58 @@ export function OrbitFooter() {
 
             {/* ── Right Column Group (Why Us + Legal) ── */}
             {(whyUsItems.length > 0 || legalLinks.length > 0) && (
-              <div className="col-span-1 md:col-span-1 flex flex-col md:grid md:grid-cols-[5fr_4fr] gap-5">
-                {/* ── Col 3: Why Us ── */}
-                {whyUsItems.length > 0 && (
-                  <div className="col-span-1 md:col-span-1 flex flex-col md:h-[220px] rounded-2xl border border-border/40 p-6">
-                    <h4 className="w-fit text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
-                      Why Us
-                    </h4>
-                    <ul className="space-y-2">
-                      {whyUsItems.map((item, idx) => (
-                        <li key={idx}>
-                          <a
-                            href="#why-us"
-                            className="text-sm text-muted-foreground/70 hover:text-primary transition-colors"
-                          >
-                            {item.title}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* ── Col 4: Legal ── */}
-                {legalLinks.length > 0 && (
-                  <div className="col-span-1 md:col-span-1 flex flex-col md:h-[160px] rounded-2xl border border-border/40 p-6">
-                    <h4 className="w-fit text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
-                      Legal
-                    </h4>
-                    <ul className="space-y-2">
-                      {legalLinks.map((link, idx) => (
-                        <li key={idx}>
-                          {link.url.startsWith('/') ? (
-                            <Link to={link.url} className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
-                              {link.label}
-                            </Link>
-                          ) : (
-                            <a href={link.url} className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
-                              {link.label}
+              <div className="col-span-1 md:col-span-1 flex flex-col justify-between h-full">
+                <div className="flex flex-col md:grid md:grid-cols-[5fr_4fr] gap-5 mb-5 md:mb-0">
+                  {/* ── Col 3: Why Us ── */}
+                  {whyUsItems.length > 0 && (
+                    <div className="col-span-1 md:col-span-1 flex flex-col md:h-[220px] rounded-2xl border border-border/40 p-6">
+                      <h4 className="w-fit text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
+                        Why Us
+                      </h4>
+                      <ul className="space-y-2">
+                        {whyUsItems.map((item, idx) => (
+                          <li key={idx}>
+                            <a
+                              href="#why-us"
+                              className="text-sm text-muted-foreground/70 hover:text-primary transition-colors"
+                            >
+                              {item.title}
                             </a>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* ── Col 4: Legal ── */}
+                  {legalLinks.length > 0 && (
+                    <div className="col-span-1 md:col-span-1 flex flex-col md:h-[160px] rounded-2xl border border-border/40 p-6">
+                      <h4 className="w-fit text-xs font-semibold text-foreground uppercase tracking-wider mb-3 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
+                        Legal
+                      </h4>
+                      <ul className="space-y-2">
+                        {legalLinks.map((link, idx) => (
+                          <li key={idx}>
+                            {link.url.startsWith('/') ? (
+                              <Link to={link.url} className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
+                                {link.label}
+                              </Link>
+                            ) : (
+                              <a href={link.url} className="text-sm text-muted-foreground/70 hover:text-primary transition-colors">
+                                {link.label}
+                              </a>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                </div>
 
                 {/* ── Social Icons (Desktop only - at bottom, aligned with copyright level) ── */}
                 {socials.length > 0 && (
-                  <div className="hidden md:flex col-span-1 md:col-span-2 items-center justify-end mt-auto pt-10">
+                  <div className="hidden md:flex items-center justify-end mt-auto">
                     <div className="flex flex-wrap items-center gap-2.5 p-2 rounded-2xl border border-border/40 bg-card/20 backdrop-blur-sm">
                       {socials.map((social: any) => {
                         const Icon = PLATFORM_ICONS[social.platform];
