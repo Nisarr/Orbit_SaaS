@@ -26,6 +26,22 @@ export function useCollisionSound() {
             pool.push(audio);
         }
         audioPoolRef.current = pool;
+
+        // Unlock audio on first user gesture (mobile browsers block autoplay)
+        const unlock = () => {
+            pool.forEach(a => {
+                a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => { });
+            });
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('click', unlock);
+        };
+        window.addEventListener('touchstart', unlock, { once: true });
+        window.addEventListener('click', unlock, { once: true });
+
+        return () => {
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('click', unlock);
+        };
     }, []);
 
     // Listen for mute toggle events from other components
