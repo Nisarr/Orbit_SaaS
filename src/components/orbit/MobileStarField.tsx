@@ -306,6 +306,11 @@ export function MobileStarField() {
             setTimeout(() => {
                 const fireColors = ['#ff6b00', '#ff4500', '#ff8c00', '#ffd700', '#ff3300', '#ffaa00', color1, color2];
                 createBurst(container, cx, cy, fireColors, '#ff6b00', 14, 80);
+                // Earthquake screen shake
+                document.body.classList.remove('collision-shake');
+                void document.body.offsetWidth; // force reflow to restart animation
+                document.body.classList.add('collision-shake');
+                setTimeout(() => document.body.classList.remove('collision-shake'), 450);
                 for (let i = 0; i < 6; i++) {
                     const eAngle = Math.random() * 360;
                     const eDist = 20 + Math.random() * 40;
@@ -336,6 +341,11 @@ export function MobileStarField() {
             createIncomingComet(container, cx + Math.cos(r2) * dist, cy + Math.sin(r2) * dist * 0.6, cx, cy, iconColor, approachDur, icon);
             setTimeout(() => {
                 createBurst(container, cx, cy, [iconColor, '#ffffff', iconColor + 'cc'], iconColor, 10, 60);
+                // Earthquake screen shake
+                document.body.classList.remove('collision-shake');
+                void document.body.offsetWidth;
+                document.body.classList.add('collision-shake');
+                setTimeout(() => document.body.classList.remove('collision-shake'), 450);
             }, approachDur * 1000);
         }
         burstTimeoutRef.current = setTimeout(spawnCollision, 6000);
