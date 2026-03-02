@@ -17,6 +17,8 @@ import {
     Youtube,
     Github,
     MessageCircle,
+    Plus,
+    Trash2,
 } from 'lucide-react';
 
 // ─── Types ───
@@ -25,6 +27,11 @@ interface SocialLink {
     platform: string;
     url: string;
     enabled: boolean;
+}
+
+interface QuickLink {
+    label: string;
+    url: string;
 }
 
 const PLATFORMS = [
@@ -77,10 +84,11 @@ export default function AdminFooter() {
 
     const [loading, setLoading] = useState(true);
     const [sectionInfo, setSectionInfo] = useState({
-        en: { brandName: '', rights: '', tagline: '' },
-        bn: { brandName: '', rights: '', tagline: '' },
+        en: { brandName: '', rights: '', tagline: '', email: '', phone: '', location: '', madeWith: '' },
+        bn: { brandName: '', rights: '', tagline: '', email: '', phone: '', location: '', madeWith: '' },
     });
     const [socials, setSocials] = useState<SocialLink[]>(DEFAULT_SOCIALS);
+    const [quickLinks, setQuickLinks] = useState<QuickLink[]>([]);
 
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -99,14 +107,32 @@ export default function AdminFooter() {
         const bnF = (content.bn.footer as any) || {};
 
         setSectionInfo({
-            en: { brandName: enF.brandName || '', rights: enF.rights || '', tagline: enF.tagline || '' },
-            bn: { brandName: bnF.brandName || '', rights: bnF.rights || '', tagline: bnF.tagline || '' },
+            en: {
+                brandName: enF.brandName || '',
+                rights: enF.rights || '',
+                tagline: enF.tagline || '',
+                email: enF.email || '',
+                phone: enF.phone || '',
+                location: enF.location || '',
+                madeWith: enF.madeWith || '',
+            },
+            bn: {
+                brandName: bnF.brandName || '',
+                rights: bnF.rights || '',
+                tagline: bnF.tagline || '',
+                email: bnF.email || '',
+                phone: bnF.phone || '',
+                location: bnF.location || '',
+                madeWith: bnF.madeWith || '',
+            },
         });
+
+        // Quick links (shared, read from EN)
+        setQuickLinks(enF.quickLinks || []);
 
         // Prefer EN socials, fallback to BN, then defaults
         const rawSocials: SocialLink[] = enF.socials || bnF.socials || [];
         if (rawSocials.length > 0) {
-            // Merge with PLATFORMS to ensure all platforms exist
             const merged = PLATFORMS.map((p) => {
                 const existing = rawSocials.find((s: SocialLink) => s.platform === p.id);
                 return existing || { platform: p.id, url: '', enabled: false };
@@ -129,6 +155,11 @@ export default function AdminFooter() {
                 brandName: sectionInfo.en.brandName,
                 rights: sectionInfo.en.rights,
                 tagline: sectionInfo.en.tagline,
+                email: sectionInfo.en.email,
+                phone: sectionInfo.en.phone,
+                location: sectionInfo.en.location,
+                madeWith: sectionInfo.en.madeWith,
+                quickLinks,
                 socials,
             });
 
@@ -136,6 +167,11 @@ export default function AdminFooter() {
                 brandName: sectionInfo.bn.brandName,
                 rights: sectionInfo.bn.rights,
                 tagline: sectionInfo.bn.tagline,
+                email: sectionInfo.bn.email,
+                phone: sectionInfo.bn.phone,
+                location: sectionInfo.bn.location,
+                madeWith: sectionInfo.bn.madeWith,
+                quickLinks,
                 socials,
             });
 
@@ -160,11 +196,17 @@ export default function AdminFooter() {
         }
     };
 
-    // ─── Helper ───
+    // ─── Helpers ───
     const updateSocial = (platform: string, field: 'url' | 'enabled', value: string | boolean) => {
         setSocials((prev) =>
             prev.map((s) => (s.platform === platform ? { ...s, [field]: value } : s))
         );
+    };
+
+    const addQuickLink = () => setQuickLinks([...quickLinks, { label: '', url: '' }]);
+    const removeQuickLink = (idx: number) => setQuickLinks(quickLinks.filter((_, i) => i !== idx));
+    const updateQuickLink = (idx: number, field: keyof QuickLink, value: string) => {
+        setQuickLinks(quickLinks.map((l, i) => (i === idx ? { ...l, [field]: value } : l)));
     };
 
     if (loading) {
@@ -176,7 +218,7 @@ export default function AdminFooter() {
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <SectionHeader
                     title="Footer Manager (Unified)"
-                    description="Edit footer text and manage social media links."
+                    description="Edit footer text, contact info, quick links, and social media."
                 />
                 <div className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">
                     ✅ Dual-Language Mode Active
@@ -185,15 +227,23 @@ export default function AdminFooter() {
 
             <ErrorAlert message={error} />
 
-            {/* Section titles (EN + BN side by side) */}
+            {/* ─── Brand & Tagline (EN + BN) ─── */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card rounded-xl p-6 border border-border">
                 <div className="space-y-4">
-                    <h3 className="font-semibold text-primary">English Footer Text</h3>
+                    <h3 className="font-semibold text-primary">🇬🇧 English</h3>
                     <TextField
                         label="Brand Name"
                         value={sectionInfo.en.brandName}
                         onChange={(v) =>
                             setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, brandName: v } })
+                        }
+                        lang="en"
+                    />
+                    <TextField
+                        label="Tagline"
+                        value={sectionInfo.en.tagline}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, tagline: v } })
                         }
                         lang="en"
                     />
@@ -206,21 +256,29 @@ export default function AdminFooter() {
                         lang="en"
                     />
                     <TextField
-                        label="Tagline"
-                        value={sectionInfo.en.tagline}
+                        label="Made With Text"
+                        value={sectionInfo.en.madeWith}
                         onChange={(v) =>
-                            setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, tagline: v } })
+                            setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, madeWith: v } })
                         }
                         lang="en"
                     />
                 </div>
                 <div className="space-y-4">
-                    <h3 className="font-semibold text-primary">Bangla Footer Text</h3>
+                    <h3 className="font-semibold text-primary">🇧🇩 বাংলা</h3>
                     <TextField
                         label="ব্র্যান্ড নাম (Brand Name)"
                         value={sectionInfo.bn.brandName}
                         onChange={(v) =>
                             setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, brandName: v } })
+                        }
+                        lang="bn"
+                    />
+                    <TextField
+                        label="ট্যাগলাইন (Tagline)"
+                        value={sectionInfo.bn.tagline}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, tagline: v } })
                         }
                         lang="bn"
                     />
@@ -233,17 +291,127 @@ export default function AdminFooter() {
                         lang="bn"
                     />
                     <TextField
-                        label="ট্যাগলাইন (Tagline)"
-                        value={sectionInfo.bn.tagline}
+                        label="মেইড উইথ (Made With)"
+                        value={sectionInfo.bn.madeWith}
                         onChange={(v) =>
-                            setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, tagline: v } })
+                            setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, madeWith: v } })
                         }
                         lang="bn"
                     />
                 </div>
             </div>
 
-            {/* Social Media Links */}
+            {/* ─── Contact Info (EN + BN) ─── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card rounded-xl p-6 border border-border">
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">📞 Contact Info (EN)</h3>
+                    <TextField
+                        label="Email"
+                        value={sectionInfo.en.email}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, email: v } })
+                        }
+                        lang="en"
+                    />
+                    <TextField
+                        label="Phone"
+                        value={sectionInfo.en.phone}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, phone: v } })
+                        }
+                        lang="en"
+                    />
+                    <TextField
+                        label="Location"
+                        value={sectionInfo.en.location}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, en: { ...sectionInfo.en, location: v } })
+                        }
+                        lang="en"
+                    />
+                </div>
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-foreground flex items-center gap-2">📞 Contact Info (BN)</h3>
+                    <TextField
+                        label="ইমেইল (Email)"
+                        value={sectionInfo.bn.email}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, email: v } })
+                        }
+                        lang="bn"
+                    />
+                    <TextField
+                        label="ফোন (Phone)"
+                        value={sectionInfo.bn.phone}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, phone: v } })
+                        }
+                        lang="bn"
+                    />
+                    <TextField
+                        label="অবস্থান (Location)"
+                        value={sectionInfo.bn.location}
+                        onChange={(v) =>
+                            setSectionInfo({ ...sectionInfo, bn: { ...sectionInfo.bn, location: v } })
+                        }
+                        lang="bn"
+                    />
+                </div>
+            </div>
+
+            {/* ─── Quick Links (Shared) ─── */}
+            <div className="bg-card rounded-xl p-6 border border-border">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 className="font-semibold text-foreground flex items-center gap-2">🔗 Quick Links</h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Navigation links shown in the footer (shared across languages). Use anchor links like <code className="text-primary">#services</code> for on-page navigation.
+                        </p>
+                    </div>
+                    <button
+                        onClick={addQuickLink}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                        <Plus className="w-3.5 h-3.5" /> Add Link
+                    </button>
+                </div>
+
+                {quickLinks.length === 0 ? (
+                    <p className="text-sm text-muted-foreground/60 italic py-4 text-center">
+                        No quick links yet. Click "Add Link" to get started.
+                    </p>
+                ) : (
+                    <div className="space-y-2">
+                        {quickLinks.map((link, idx) => (
+                            <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/30">
+                                <input
+                                    type="text"
+                                    placeholder="Label (e.g. Services)"
+                                    value={link.label}
+                                    onChange={(e) => updateQuickLink(idx, 'label', e.target.value)}
+                                    className="flex-1 bg-background rounded-lg px-3 py-2 text-sm text-foreground outline-none border border-border placeholder:text-muted-foreground/50"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="URL (e.g. #services or /about)"
+                                    value={link.url}
+                                    onChange={(e) => updateQuickLink(idx, 'url', e.target.value)}
+                                    className="flex-1 bg-background rounded-lg px-3 py-2 text-sm text-foreground outline-none border border-border placeholder:text-muted-foreground/50"
+                                />
+                                <button
+                                    onClick={() => removeQuickLink(idx)}
+                                    className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                                    title="Remove link"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* ─── Social Media Links ─── */}
             <div className="bg-card rounded-xl p-6 border border-border">
                 <h3 className="font-semibold text-foreground mb-1">Social Media Links</h3>
                 <p className="text-xs text-muted-foreground mb-5">
@@ -300,12 +468,22 @@ export default function AdminFooter() {
                             brandName: sectionInfo.en.brandName,
                             rights: sectionInfo.en.rights,
                             tagline: sectionInfo.en.tagline,
+                            email: sectionInfo.en.email,
+                            phone: sectionInfo.en.phone,
+                            location: sectionInfo.en.location,
+                            madeWith: sectionInfo.en.madeWith,
+                            quickLinks,
                             socials,
                         },
                         bn: {
                             brandName: sectionInfo.bn.brandName,
                             rights: sectionInfo.bn.rights,
                             tagline: sectionInfo.bn.tagline,
+                            email: sectionInfo.bn.email,
+                            phone: sectionInfo.bn.phone,
+                            location: sectionInfo.bn.location,
+                            madeWith: sectionInfo.bn.madeWith,
+                            quickLinks,
                             socials,
                         },
                     }}
@@ -315,15 +493,28 @@ export default function AdminFooter() {
                             return;
                         }
                         setSectionInfo({
-                            en: { brandName: parsed.en.brandName || '', rights: parsed.en.rights || '', tagline: parsed.en.tagline || '' },
-                            bn: { brandName: parsed.bn.brandName || '', rights: parsed.bn.rights || '', tagline: parsed.bn.tagline || '' },
+                            en: {
+                                brandName: parsed.en.brandName || '',
+                                rights: parsed.en.rights || '',
+                                tagline: parsed.en.tagline || '',
+                                email: parsed.en.email || '',
+                                phone: parsed.en.phone || '',
+                                location: parsed.en.location || '',
+                                madeWith: parsed.en.madeWith || '',
+                            },
+                            bn: {
+                                brandName: parsed.bn.brandName || '',
+                                rights: parsed.bn.rights || '',
+                                tagline: parsed.bn.tagline || '',
+                                email: parsed.bn.email || '',
+                                phone: parsed.bn.phone || '',
+                                location: parsed.bn.location || '',
+                                madeWith: parsed.bn.madeWith || '',
+                            },
                         });
-                        // Socials are usually shared, so we take from EN if present
-                        if (parsed.en.socials) {
-                            setSocials(parsed.en.socials);
-                        } else if (parsed.bn.socials) {
-                            setSocials(parsed.bn.socials);
-                        }
+                        if (parsed.en.quickLinks) setQuickLinks(parsed.en.quickLinks);
+                        if (parsed.en.socials) setSocials(parsed.en.socials);
+                        else if (parsed.bn.socials) setSocials(parsed.bn.socials);
                     }}
                 />
             </div>

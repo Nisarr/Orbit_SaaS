@@ -40,6 +40,8 @@ const AdminStats = lazy(() => import('./pages/admin/AdminStats'));
 const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
 const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const Chatbot = lazy(() => import('./components/orbit/Chatbot').then(m => ({ default: m.Chatbot })));
 const LeadMagnetPopup = lazy(() => import('./components/orbit/LeadMagnetPopup').then(m => ({ default: m.LeadMagnetPopup })));
 import { GlobalBackground } from './components/orbit/GlobalBackground';
@@ -195,6 +197,8 @@ export default function App() {
                   <Route path="/" element={<PublicSite />} />
                   <Route path="/project" element={<ProjectsPage />} />
                   <Route path="/project/:id" element={<ProjectDetail />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin" element={<AdminLayout />}>
                     <Route index element={<Navigate to="/admin/hero" replace />} />
