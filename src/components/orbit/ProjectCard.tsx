@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 
@@ -23,8 +24,69 @@ export function ProjectCard({ item, routeId, isHovered, onMouseEnter, onMouseLea
     const plainDesc = stripHtml(item.desc || '');
     const shortDesc = truncate(plainDesc, 100);
     const coverImage = item.images?.[0] || item.image || '/placeholder.png';
-    const hoverImage = item.images?.[1] || null;
     const categories: string[] = item.categories || (item.category ? [item.category] : ['Portfolio']);
+
+    // Build the list of hover images from admin-selected indices
+    const hoverImageUrls: string[] = (() => {
+        const indices: number[] = item.hoverImages || [];
+        if (indices.length > 0) {
+            return indices
+                .filter((idx: number) => idx < (item.images?.length || 0))
+                .map((idx: number) => item.images[idx]);
+        }
+        // Fallback: if no hover images selected, use the 2nd image if available
+        return item.images?.[1] ? [item.images[1]] : [];
+    })();
+
+    // Cycling state
+    const [activeIndex, setActiveIndex] = useState(-1); // -1 = cover image
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const clearCycling = useCallback(() => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isHovered && hoverImageUrls.length > 0 && typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches) {
+            // Start cycling immediately with first hover image
+            setIsTransitioning(true);
+            setTimeout(() => {
+                setActiveIndex(0);
+                setTimeout(() => setIsTransitioning(false), 50);
+            }, 50);
+
+            // Then cycle every 2 seconds
+            intervalRef.current = setInterval(() => {
+                setIsTransitioning(true);
+                setTimeout(() => {
+                    setActiveIndex(prev => {
+                        const next = prev + 1;
+                        return next >= hoverImageUrls.length ? 0 : next;
+                    });
+                    setTimeout(() => setIsTransitioning(false), 50);
+                }, 300); // 300ms fade-out, then swap
+            }, 2000);
+        } else {
+            clearCycling();
+            if (!isHovered) {
+                setIsTransitioning(true);
+                setTimeout(() => {
+                    setActiveIndex(-1);
+                    setTimeout(() => setIsTransitioning(false), 50);
+                }, 150);
+            }
+        }
+
+        return clearCycling;
+    }, [isHovered, hoverImageUrls.length, clearCycling]);
+
+    const currentImage = activeIndex >= 0 && activeIndex < hoverImageUrls.length
+        ? hoverImageUrls[activeIndex]
+        : coverImage;
 
     return (
         <div
@@ -35,29 +97,35 @@ export function ProjectCard({ item, routeId, isHovered, onMouseEnter, onMouseLea
             {/* Media Area */}
             <div className="relative aspect-video overflow-hidden bg-muted">
                 <Link to={`/project/${routeId}`} className="block w-full h-full">
-                    {/* Video Preview (on hover, desktop only) */}
-                    {item.videoPreview && isHovered && typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches ? (
+                    {/* Video Preview (on hover, desktop only) — only if no hover images */}
+                    {item.videoPreview && hoverImageUrls.length === 0 && isHovered && typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches ? (
                         <video src={item.videoPreview} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-10" />
                     ) : null}
 
-                    {/* Default Cover Image */}
+                    {/* Current Image with crossfade */}
                     <img
-                        src={coverImage}
+                        src={currentImage}
                         alt={item.title}
                         loading="lazy"
-                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${hoverImage ? 'group-hover:opacity-0' : 'group-hover:brightness-110'}`}
+                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-in-out ${isHovered ? 'scale-105 brightness-110' : ''
+                            } ${isTransitioning ? 'opacity-0 scale-110' : 'opacity-100'}`}
                     />
-
-                    {/* Hover Image (next image) — crossfade in */}
-                    {hoverImage && (
-                        <img
-                            src={hoverImage}
-                            alt={`${item.title} preview`}
-                            loading="lazy"
-                            className="absolute inset-0 w-full h-full object-cover transition-all duration-700 opacity-0 group-hover:opacity-100 group-hover:scale-110 group-hover:brightness-110"
-                        />
-                    )}
                 </Link>
+
+                {/* Image indicator dots — shown on hover when multiple images */}
+                {isHovered && hoverImageUrls.length > 1 && (
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+                        {hoverImageUrls.map((_, i) => (
+                            <div
+                                key={i}
+                                className={`rounded-full transition-all duration-300 ${i === activeIndex
+                                        ? 'w-4 h-1.5 bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)]'
+                                        : 'w-1.5 h-1.5 bg-white/40'
+                                    }`}
+                            />
+                        ))}
+                    </div>
+                )}
 
                 {/* Shimmer light sweep on hover */}
                 <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">

@@ -167,6 +167,7 @@ interface UnifiedProject {
     id: string; // Slug for URL (e.g. 'lifesolver')
     order: number; // Display order on homepage
     images: string[];
+    hoverImages: number[]; // Indices into images[] to show on hover
     link: string;
     categories: string[];
     featured: boolean;
@@ -189,6 +190,7 @@ const DEFAULT_PROJECT: UnifiedProject = {
     id: '',
     order: 0,
     images: [],
+    hoverImages: [],
     link: '',
     categories: ['SaaS'],
     featured: false,
@@ -204,6 +206,10 @@ const DEFAULT_PROJECT: UnifiedProject = {
 function ProjectEditor({ item, update, categories: availableCategories }: { item: UnifiedProject; update: (i: UnifiedProject) => void; categories: string[] }) {
     const [tab, setTab] = useState<'en' | 'bn'>('en');
     const [collapsedSections, setCollapsedSections] = useState<Set<number>>(new Set());
+    const [jsonDescOpen, setJsonDescOpen] = useState(false);
+    const [jsonDescHelp, setJsonDescHelp] = useState(false);
+    const [jsonDescText, setJsonDescText] = useState('');
+    const [jsonDescError, setJsonDescError] = useState('');
 
     const toggleSection = (index: number) => {
         setCollapsedSections(prev => {
@@ -299,9 +305,67 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
 
                 <MultiImageUpload
                     images={item.images}
-                    onChange={imgs => update({ ...item, images: imgs })}
+                    onChange={imgs => {
+                        // Clean up hoverImages: remove any indices that are out of bounds
+                        const validHover = (item.hoverImages || []).filter(idx => idx < imgs.length);
+                        update({ ...item, images: imgs, hoverImages: validHover });
+                    }}
                     title="Project Images"
                 />
+
+                {/* Hover Images Selector */}
+                {item.images.length > 1 && (
+                    <div>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">
+                            Hover Preview Images
+                            <span className="text-xs font-normal text-muted-foreground ml-2">
+                                (Click to toggle — selected images cycle on card hover every 2s)
+                            </span>
+                        </label>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                            {item.images.map((img, i) => {
+                                if (i === 0) return null; // Skip cover image
+                                const isSelected = (item.hoverImages || []).includes(i);
+                                return (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => {
+                                            const current = item.hoverImages || [];
+                                            const updated = isSelected
+                                                ? current.filter(idx => idx !== i)
+                                                : [...current, i];
+                                            update({ ...item, hoverImages: updated });
+                                        }}
+                                        className={`relative rounded-lg overflow-hidden border-2 transition-all ${isSelected
+                                            ? 'border-primary ring-2 ring-primary/30 scale-[1.02]'
+                                            : 'border-border/50 opacity-60 hover:opacity-100 hover:border-border'
+                                            }`}
+                                    >
+                                        <img src={img} alt="" className="w-full h-20 object-cover" />
+                                        {isSelected && (
+                                            <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                                <span className="text-[10px] font-bold text-white">
+                                                    {(item.hoverImages || []).indexOf(i) + 1}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="absolute bottom-0 inset-x-0 bg-black/60 text-center py-0.5">
+                                            <span className="text-[9px] text-white/80 font-medium">
+                                                {isSelected ? 'Selected' : 'Click to add'}
+                                            </span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {(item.hoverImages || []).length > 0 && (
+                            <p className="text-[11px] text-muted-foreground mt-1.5">
+                                {(item.hoverImages || []).length} image{(item.hoverImages || []).length !== 1 ? 's' : ''} will cycle on hover
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 <TagsInput
                     tags={item.tags || []}
@@ -384,6 +448,200 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
                     </div>
                 </div>
             </div>
+
+            {/* JSON Description Import */}
+            {(() => {
+
+                const joinParagraphs = (paras: { heading: string; body: string; color: string }[]) => {
+                    return paras.map(p => {
+                        if (!p.heading?.trim()) return p.body || '<p><br></p>';
+                        const colorAttr = p.color ? ` data-color="${p.color}"` : '';
+                        return `<h3${colorAttr}>${p.heading.trim()}</h3>` + (p.body || '<p><br></p>');
+                    }).join('<hr>');
+                };
+
+                const handleParse = () => {
+                    setJsonDescError('');
+                    try {
+                        const parsed = JSON.parse(jsonDescText);
+
+                        // Support both formats:
+                        // Format 1: { "en": [...], "bn": [...] }
+                        // Format 2: { "en": { "title": "...", "sections": [...] }, "bn": { ... } }
+                        const getTitle = (langObj: any) => {
+                            if (typeof langObj?.title === 'string') return langObj.title;
+                            return null;
+                        };
+
+                        const getSections = (langObj: any) => {
+                            if (Array.isArray(langObj)) return langObj;
+                            if (Array.isArray(langObj?.sections)) return langObj.sections;
+                            return null;
+                        };
+
+                        const enSections = getSections(parsed.en);
+                        const bnSections = getSections(parsed.bn);
+
+                        if (!enSections && !bnSections) {
+                            setJsonDescError('JSON must have "en" and/or "bn" with sections array. Click (?) for format.');
+                            return;
+                        }
+
+                        let updatedItem = { ...item };
+
+                        // Update EN title + description
+                        if (enSections) {
+                            const enTitle = getTitle(parsed.en);
+                            const enParas = enSections.map((s: any) => ({
+                                heading: s.heading || '',
+                                body: typeof s.body === 'string' ? (s.body.startsWith('<') ? s.body : `<p>${s.body}</p>`) : '<p><br></p>',
+                                color: s.color || ''
+                            }));
+                            updatedItem = {
+                                ...updatedItem,
+                                en: {
+                                    ...updatedItem.en,
+                                    ...(enTitle ? { title: enTitle } : {}),
+                                    description: joinParagraphs(enParas)
+                                }
+                            };
+                        }
+
+                        // Update BN title + description
+                        if (bnSections) {
+                            const bnTitle = getTitle(parsed.bn);
+                            const bnParas = bnSections.map((s: any) => ({
+                                heading: s.heading || '',
+                                body: typeof s.body === 'string' ? (s.body.startsWith('<') ? s.body : `<p>${s.body}</p>`) : '<p><br></p>',
+                                color: s.color || ''
+                            }));
+                            updatedItem = {
+                                ...updatedItem,
+                                bn: {
+                                    ...updatedItem.bn,
+                                    ...(bnTitle ? { title: bnTitle } : {}),
+                                    description: joinParagraphs(bnParas)
+                                }
+                            };
+                        }
+
+                        update(updatedItem);
+                        toast.success(`Description imported! ${enSections ? enSections.length + ' EN' : ''}${enSections && bnSections ? ' + ' : ''}${bnSections ? bnSections.length + ' BN' : ''} sections. Click "Save Changes" to persist.`);
+                        setJsonDescText('');
+                        setJsonDescOpen(false);
+                    } catch (err: any) {
+                        setJsonDescError(`Invalid JSON: ${err.message}`);
+                    }
+                };
+
+                return (
+                    <div className="bg-background rounded-xl border border-border overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => setJsonDescOpen(!jsonDescOpen)}
+                            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-secondary/30 transition-colors cursor-pointer"
+                        >
+                            <div className="flex items-center gap-2.5">
+                                <Layers className="w-4.5 h-4.5 text-primary" />
+                                <span className="text-sm font-semibold text-foreground">📋 JSON Description Import</span>
+                                <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">EN + BN</span>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${jsonDescOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {jsonDescOpen && (
+                            <div className="px-5 pb-5 space-y-3 border-t border-border pt-4">
+                                <div className="flex items-start justify-between gap-2">
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Paste a JSON object with <code className="bg-secondary px-1 py-0.5 rounded text-primary">"en"</code> and <code className="bg-secondary px-1 py-0.5 rounded text-primary">"bn"</code> keys to import description paragraphs for both languages at once.
+                                    </p>
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => setJsonDescHelp(!jsonDescHelp)}
+                                            className="p-1.5 rounded-lg bg-secondary hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                                            title="Show format guide"
+                                        >
+                                            <HelpCircle className="w-4 h-4" />
+                                        </button>
+                                        {jsonDescHelp && (
+                                            <div className="absolute right-0 top-full mt-2 w-[420px] p-4 rounded-xl bg-background border border-border shadow-2xl z-50">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h4 className="text-sm font-bold text-foreground">JSON Format Guide</h4>
+                                                    <button onClick={() => setJsonDescHelp(false)} className="text-muted-foreground hover:text-foreground">
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                                <pre className="text-[11px] font-mono text-muted-foreground bg-secondary/50 rounded-lg p-3 overflow-auto max-h-[320px] leading-relaxed whitespace-pre">{`{
+  "en": {
+    "title": "Project Title (optional)",
+    "sections": [
+      {
+        "heading": "Section Heading",
+        "body": "<p>HTML or plain text</p>",
+        "color": "#6c5ce7"
+      },
+      {
+        "heading": "Another Section",
+        "body": "Plain text is auto-wrapped"
+      }
+    ]
+  },
+  "bn": {
+    "title": "প্রজেক্টের নাম (ঐচ্ছিক)",
+    "sections": [
+      {
+        "heading": "শিরোনাম",
+        "body": "<p>বিবরণ</p>",
+        "color": "#6c5ce7"
+      }
+    ]
+  }
+}`}</pre>
+                                                <div className="mt-3 space-y-1.5 text-[11px] text-muted-foreground">
+                                                    <p>• <strong>heading</strong> — Section title (h3 tag, optional)</p>
+                                                    <p>• <strong>body</strong> — HTML or plain text content</p>
+                                                    <p>• <strong>color</strong> — Heading accent color (optional, e.g. #6c5ce7)</p>
+                                                    <p>• <strong>title</strong> — Sets the project title (optional)</p>
+                                                    <p className="text-primary font-medium">Each section becomes a description card on the project page.</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <textarea
+                                    value={jsonDescText}
+                                    onChange={e => { setJsonDescText(e.target.value); setJsonDescError(''); }}
+                                    placeholder='{ "en": { "sections": [...] }, "bn": { "sections": [...] } }'
+                                    rows={8}
+                                    className="w-full rounded-lg bg-secondary/50 border border-border p-3 text-xs font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
+                                    spellCheck={false}
+                                />
+
+                                {jsonDescError && (
+                                    <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-xs">
+                                        <span>⚠️ {jsonDescError}</span>
+                                    </div>
+                                )}
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleParse}
+                                        disabled={!jsonDescText.trim()}
+                                        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+                                    >
+                                        <Layers className="w-3.5 h-3.5" />
+                                        Import Description
+                                    </button>
+                                    <span className="text-[10px] text-muted-foreground">Both EN + BN will be populated. Click "Save Changes" after.</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
 
             {/* Language Tabs */}
             <div className="bg-background rounded-xl border border-border overflow-hidden">
@@ -667,6 +925,7 @@ export default function AdminProjects() {
                 id: enItem.id || bnItem.id || '',
                 order: enItem.order ?? bnItem.order ?? i,
                 images: sharedImages,
+                hoverImages: enItem.hoverImages || bnItem.hoverImages || [],
                 link: enItem.link || bnItem.link || '',
                 categories: sharedCategories,
                 featured: enItem.featured ?? bnItem.featured ?? false,
@@ -706,6 +965,7 @@ export default function AdminProjects() {
                 id: p.id,
                 order: p.order,
                 images: p.images,
+                hoverImages: p.hoverImages || [],
                 image: p.images[0] || '',
                 link: p.link,
                 categories: p.categories,
@@ -723,6 +983,7 @@ export default function AdminProjects() {
                 id: p.id,
                 order: p.order,
                 images: p.images,
+                hoverImages: p.hoverImages || [],
                 image: p.images[0] || '',
                 link: p.link,
                 categories: p.categories,
@@ -961,6 +1222,7 @@ export default function AdminProjects() {
                                 id: en.id || bn.id || '',
                                 order: en.order ?? bn.order ?? i,
                                 images: en.images || bn.images || [],
+                                hoverImages: en.hoverImages || bn.hoverImages || [],
                                 link: en.link || bn.link || '',
                                 categories: Array.isArray(importCats) ? importCats : [importCats],
                                 featured: en.featured ?? bn.featured ?? false,
