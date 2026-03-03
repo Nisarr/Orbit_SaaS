@@ -107,9 +107,12 @@ export function ProjectCard({ item, routeId, isHovered, onMouseEnter, onMouseLea
                         src={currentImage}
                         alt={item.title}
                         loading="lazy"
-                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-in-out ${isHovered ? 'scale-105 brightness-110' : ''
+                        draggable="false"
+                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-in-out no-browser-trigger ${isHovered ? 'scale-105 brightness-110' : ''
                             } ${isTransitioning ? 'opacity-0 scale-110' : 'opacity-100'}`}
                     />
+                    {/* Protective overlay to block browser image-specific triggers */}
+                    <div className="absolute inset-0 z-[1] select-none touch-none pointer-events-none sm:pointer-events-auto" aria-hidden="true" />
                 </Link>
 
                 {/* Image indicator dots — shown on hover when multiple images */}
@@ -119,8 +122,8 @@ export function ProjectCard({ item, routeId, isHovered, onMouseEnter, onMouseLea
                             <div
                                 key={i}
                                 className={`rounded-full transition-all duration-300 ${i === activeIndex
-                                        ? 'w-4 h-1.5 bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)]'
-                                        : 'w-1.5 h-1.5 bg-white/40'
+                                    ? 'w-4 h-1.5 bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)]'
+                                    : 'w-1.5 h-1.5 bg-white/40'
                                     }`}
                             />
                         ))}

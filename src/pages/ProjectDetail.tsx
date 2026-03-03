@@ -87,7 +87,8 @@ function ImageGallery({ images, title, onLightboxChange }: { images: string[]; t
                                 dragConstraints={{ left: 0, right: 0 }}
                                 dragElastic={1}
                                 onDragEnd={handleDragEnd}
-                                className="absolute inset-0 w-full h-full object-contain bg-black/5 touch-pan-y"
+                                draggable="false"
+                                className="absolute inset-0 w-full h-full object-contain bg-black/5 touch-pan-y no-browser-trigger"
                                 alt={`${title} - slide ${currentIndex + 1}`}
                             />
                         </AnimatePresence>
@@ -188,7 +189,8 @@ function ImageGallery({ images, title, onLightboxChange }: { images: string[]; t
                             dragConstraints={{ left: 0, right: 0 }}
                             dragElastic={1}
                             onDragEnd={handleDragEnd}
-                            className="max-w-full max-h-full md:max-w-[85vw] md:max-h-[85vh] object-contain select-none shadow-2xl touch-pan-y"
+                            draggable="false"
+                            className="max-w-full max-h-full md:max-w-[85vw] md:max-h-[85vh] object-contain select-none shadow-2xl touch-pan-y no-browser-trigger"
                             onClick={(e) => e.stopPropagation()}
                         />
 
@@ -603,7 +605,8 @@ export default function ProjectDetail() {
                                                         <img
                                                             src={coverImage}
                                                             alt={item.title}
-                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                            draggable="false"
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 no-browser-trigger"
                                                         />
                                                     </div>
                                                     <div className="flex flex-col justify-center py-0.5 min-w-0">

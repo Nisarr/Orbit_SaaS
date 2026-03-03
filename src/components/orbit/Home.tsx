@@ -273,7 +273,7 @@ export function Home() {
                       duration: 0.8,
                       ease: [0.25, 0.46, 0.45, 0.94],
                     }}
-                    className="text-[clamp(2rem,11vw,4.5rem)] sm:text-7xl md:text-8xl lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block will-change-transform animate-text-shimmer-orbit pb-1"
+                    className="text-[clamp(2.5rem,10vw,5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block will-change-transform animate-text-shimmer-orbit pb-1"
                   >
                     {letter}
                   </motion.span>
@@ -286,7 +286,7 @@ export function Home() {
                   initial={{ opacity: 0, scale: 0.85, x: -6 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="text-[clamp(2rem,11vw,4.5rem)] sm:text-7xl md:text-8xl lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-2 sm:ml-4 animate-text-shimmer-saas pb-1"
+                  className="text-[clamp(2.5rem,10vw,5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-2 sm:ml-4 animate-text-shimmer-saas pb-1"
                 >
                   SaaS
                 </motion.span>
@@ -314,7 +314,7 @@ export function Home() {
           </div>
 
           {/* Subtitle — word-by-word reveal */}
-          <motion.p className="text-muted-foreground text-[13.5px] sm:text-base md:text-lg max-w-3xl mx-auto px-2 sm:px-0 mb-[4dvh] sm:mb-12 leading-relaxed flex flex-wrap justify-center gap-x-[0.35em] font-medium">
+          <motion.p className="text-muted-foreground text-[13.5px] sm:text-base md:text-lg max-w-3xl mx-auto px-2 sm:px-0 mb-[3dvh] sm:mb-8 leading-relaxed flex flex-wrap justify-center gap-x-[0.35em] font-medium">
             {isLowPerf ? (
               <motion.span
                 initial={{ opacity: 0 }}
