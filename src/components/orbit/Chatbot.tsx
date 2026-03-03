@@ -88,7 +88,7 @@ export function Chatbot() {
 
   // Helper to determine the section currently in view
   const getActiveSection = () => {
-    const sections = ['hero', 'services', 'tech-stack', 'why-us', 'project', 'leadership', 'contact'];
+    const sections = ['hero', 'services', 'tech-stack', 'why-us', 'project', 'reviews', 'leadership', 'contact'];
     let currentSection = 'default';
     let maxVisibleHeight = 0;
 

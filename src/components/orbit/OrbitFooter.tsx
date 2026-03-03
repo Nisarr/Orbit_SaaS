@@ -54,7 +54,7 @@ export function OrbitFooter() {
   const hasContactInfo = email || phone || location;
 
   return (
-    <footer className="relative w-full pt-16 pb-24 sm:pb-12 mt-16 overflow-hidden">
+    <footer className="relative w-full pt-10 pb-20 sm:pb-12 mt-10 overflow-hidden">
       {/* Dynamic Glowing Top Divider */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent shadow-[0_0_15px_rgba(108,92,231,0.5)]" />
       <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />

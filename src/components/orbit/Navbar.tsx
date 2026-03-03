@@ -12,8 +12,8 @@ const mobileNavItems = [
   { href: '#tech-stack', icon: Trophy, label: 'Tech' },
   { href: '#why-us', icon: MessageSquare, label: 'Why Us' },
   { href: '#project', icon: FolderOpen, label: 'Projects' },
-  { href: '#leadership', icon: Users, label: 'Team' },
   { href: '#reviews', icon: Star, label: 'Reviews' },
+  { href: '#leadership', icon: Users, label: 'Team' },
   { href: '#contact', icon: Phone, label: 'Contact' },
 ];
 
@@ -113,7 +113,7 @@ export function Navbar() {
         return;
       }
 
-      const sections = ['hero', 'services', 'tech-stack', 'why-us', 'project', 'leadership', 'reviews', 'contact'];
+      const sections = ['hero', 'services', 'tech-stack', 'why-us', 'project', 'reviews', 'leadership', 'contact'];
       let current = 'hero';
       for (const id of sections) {
         const el = document.getElementById(id);
@@ -199,8 +199,8 @@ export function Navbar() {
     { href: '#tech-stack', label: t.nav.techStack },
     { href: '#why-us', label: t.nav.whyUs },
     { href: '#project', label: (t.nav as any).projects ?? 'Projects' },
-    { href: '#leadership', label: t.nav.leadership },
     { href: '#reviews', label: 'Reviews' },
+    { href: '#leadership', label: t.nav.leadership },
     { href: '#contact', label: t.nav.contact },
   ];
 

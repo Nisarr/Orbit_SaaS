@@ -136,8 +136,8 @@ function PublicSite() {
               <TechStackSection />
               <WhyUsSection />
               <ProjectsSection />
-              <LeadershipSection />
               <ReviewsSection />
+              <LeadershipSection />
               <ContactSection />
             </>
           )}

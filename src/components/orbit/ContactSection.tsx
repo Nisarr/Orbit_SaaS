@@ -26,7 +26,7 @@ export function ContactSection() {
   }, [isCtaOpen]);
 
   return (
-    <section id="contact" className="py-10 sm:py-20 px-3 sm:px-6 relative z-20 scroll-mt-12">
+    <section id="contact" className="py-10 sm:py-20 px-3 sm:px-6 relative z-20 scroll-mt-12 min-h-[50vh] flex flex-col justify-center">
 
 
       <div className="w-full mx-auto text-center relative" ref={ref}>
