@@ -97,28 +97,10 @@ export function useCollisionSound() {
 
     const collisionCountRef = useRef(0);
 
-    const playBoom = useCallback(() => {
-        // Track collision count and notify SoundToggle (always, even when muted)
-        collisionCountRef.current++;
-        window.dispatchEvent(new CustomEvent('orbit-collision', { detail: collisionCountRef.current }));
-
-        if (mutedRef.current) return;
-
-        // Relaxed visibility check: continue playing if hero is still physically nearby
-        const hero = document.getElementById('hero');
-        if (hero) {
-            const rect = hero.getBoundingClientRect();
-            const ratio = Math.max(0, Math.min(1, -rect.top / (rect.height || 1)));
-            if (ratio >= 0.8) return; // user has scrolled mostly past hero
-        }
-
+    const playSound = useCallback(() => {
         try {
             if (!_audioBuffer || !_audioCtx) return;
             const ctx = _audioCtx;
-            if (ctx.state === 'suspended') {
-                ctx.resume().catch(() => { });
-                return; // skip this one; next collision will play
-            }
 
             // Re-read volume from localStorage for real-time admin updates
             const savedVol = localStorage.getItem('orbit_sound_volume');
@@ -140,6 +122,43 @@ export function useCollisionSound() {
             // Silently fail
         }
     }, []);
+
+    const playBoom = useCallback(() => {
+        // Track collision count and notify SoundToggle (always, even when muted)
+        collisionCountRef.current++;
+        window.dispatchEvent(new CustomEvent('orbit-collision', { detail: collisionCountRef.current }));
+
+        if (mutedRef.current) return;
+
+        // Relaxed visibility check: only skip if hero is almost entirely scrolled away
+        const hero = document.getElementById('hero');
+        if (hero) {
+            const rect = hero.getBoundingClientRect();
+            const ratio = Math.max(0, Math.min(1, -rect.top / (rect.height || 1)));
+            if (ratio >= 0.95) return;
+        }
+
+        // If buffer isn't loaded yet, load it and play once ready
+        if (!_audioBuffer) {
+            ensureBuffer().then(() => {
+                if (_audioBuffer && _audioCtx && _audioCtx.state === 'running') {
+                    playSound();
+                }
+            });
+            return;
+        }
+
+        const ctx = getAudioCtx();
+        // If context is suspended, resume and play after it's running
+        if (ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                playSound();
+            }).catch(() => { });
+            return;
+        }
+
+        playSound();
+    }, [playSound]);
 
     return { playBoom };
 }
