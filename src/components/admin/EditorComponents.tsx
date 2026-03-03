@@ -345,24 +345,9 @@ export function ItemListEditor<T extends Record<string, unknown>>({
     addLabel?: string;
     getItemLabel?: (item: T, index: number) => string;
 }) {
-    // Track which items are expanded (by index)
-    const [expanded, setExpanded] = useState<Set<number>>(() => new Set(items.map((_, i) => i)));
+    // Track which items are expanded (by index) — start all collapsed
+    const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
-    // When items change externally (e.g. language switch), reset expanded to all
-    useEffect(() => {
-        setExpanded(new Set(items.map((_, i) => i)));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [items.length]);
-
-    // Listen for save events to auto-collapse
-    useEffect(() => {
-        const handleSaveSuccess = () => {
-            console.log('[Admin] List auto-collapsing after successful save');
-            setExpanded(new Set());
-        };
-        window.addEventListener('orbit:save-success', handleSaveSuccess as EventListener);
-        return () => window.removeEventListener('orbit:save-success', handleSaveSuccess as EventListener);
-    }, []);
 
     const toggleItem = (index: number) => {
         setExpanded(prev => {

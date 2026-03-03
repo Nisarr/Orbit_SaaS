@@ -493,9 +493,9 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
                         if (enSections) {
                             const enTitle = getTitle(parsed.en);
                             const enParas = enSections.map((s: any) => ({
-                                heading: s.heading || '',
-                                body: typeof s.body === 'string' ? (s.body.startsWith('<') ? s.body : `<p>${s.body}</p>`) : '<p><br></p>',
-                                color: s.color || ''
+                                heading: s.title || '',
+                                body: typeof s.description === 'string' ? (s.description.startsWith('<') ? s.description : `<p>${s.description}</p>`) : '<p><br></p>',
+                                color: ''
                             }));
                             updatedItem = {
                                 ...updatedItem,
@@ -511,9 +511,9 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
                         if (bnSections) {
                             const bnTitle = getTitle(parsed.bn);
                             const bnParas = bnSections.map((s: any) => ({
-                                heading: s.heading || '',
-                                body: typeof s.body === 'string' ? (s.body.startsWith('<') ? s.body : `<p>${s.body}</p>`) : '<p><br></p>',
-                                color: s.color || ''
+                                heading: s.title || '',
+                                body: typeof s.description === 'string' ? (s.description.startsWith('<') ? s.description : `<p>${s.description}</p>`) : '<p><br></p>',
+                                color: ''
                             }));
                             updatedItem = {
                                 ...updatedItem,
@@ -553,7 +553,7 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
                             <div className="px-5 pb-5 space-y-3 border-t border-border pt-4">
                                 <div className="flex items-start justify-between gap-2">
                                     <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Paste a JSON object with <code className="bg-secondary px-1 py-0.5 rounded text-primary">"en"</code> and <code className="bg-secondary px-1 py-0.5 rounded text-primary">"bn"</code> keys to import description paragraphs for both languages at once.
+                                        Paste a JSON object with <code className="bg-secondary px-1 py-0.5 rounded text-primary">"en"</code> and <code className="bg-secondary px-1 py-0.5 rounded text-primary">"bn"</code> keys containing section <code className="bg-secondary px-1 py-0.5 rounded text-primary">title</code> and <code className="bg-secondary px-1 py-0.5 rounded text-primary">description</code> to import for both languages at once.
                                     </p>
                                     <div className="relative">
                                         <button
@@ -577,13 +577,12 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
     "title": "Project Title (optional)",
     "sections": [
       {
-        "heading": "Section Heading",
-        "body": "<p>HTML or plain text</p>",
-        "color": "#6c5ce7"
+        "title": "Section Title",
+        "description": "Section description text"
       },
       {
-        "heading": "Another Section",
-        "body": "Plain text is auto-wrapped"
+        "title": "Another Section",
+        "description": "More details here"
       }
     ]
   },
@@ -591,18 +590,16 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
     "title": "প্রজেক্টের নাম (ঐচ্ছিক)",
     "sections": [
       {
-        "heading": "শিরোনাম",
-        "body": "<p>বিবরণ</p>",
-        "color": "#6c5ce7"
+        "title": "সেকশনের শিরোনাম",
+        "description": "সেকশনের বিবরণ"
       }
     ]
   }
 }`}</pre>
                                                 <div className="mt-3 space-y-1.5 text-[11px] text-muted-foreground">
-                                                    <p>• <strong>heading</strong> — Section title (h3 tag, optional)</p>
-                                                    <p>• <strong>body</strong> — HTML or plain text content</p>
-                                                    <p>• <strong>color</strong> — Heading accent color (optional, e.g. #6c5ce7)</p>
-                                                    <p>• <strong>title</strong> — Sets the project title (optional)</p>
+                                                    <p>• <strong>title</strong> (in sections) — Section heading displayed as a card title</p>
+                                                    <p>• <strong>description</strong> — Section body text (plain text or HTML)</p>
+                                                    <p>• <strong>title</strong> (top-level) — Sets the project title (optional)</p>
                                                     <p className="text-primary font-medium">Each section becomes a description card on the project page.</p>
                                                 </div>
                                             </div>
@@ -613,9 +610,9 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
                                 <textarea
                                     value={jsonDescText}
                                     onChange={e => { setJsonDescText(e.target.value); setJsonDescError(''); }}
-                                    placeholder='{ "en": { "sections": [...] }, "bn": { "sections": [...] } }'
+                                    placeholder='{ "en": { "title": "...", "sections": [{ "title": "...", "description": "..." }] }, "bn": { ... } }'
                                     rows={8}
-                                    className="w-full rounded-lg bg-secondary/50 border border-border p-3 text-xs font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
+                                    className="w-full rounded-lg bg-secondary border border-border p-3 text-xs font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
                                     spellCheck={false}
                                 />
 
