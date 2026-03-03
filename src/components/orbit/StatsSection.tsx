@@ -55,37 +55,37 @@ export function StatsSection() {
         }));
 
     return (
-        <div ref={ref} className="py-2 sm:py-4 px-4 sm:px-6 relative z-[100] flex items-center justify-center">
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-                className="pointer-events-none rounded-2xl sm:rounded-full px-4 sm:px-6 py-3 sm:py-2.5 border border-transparent relative overflow-hidden"
-                style={{
-                    background: 'linear-gradient(#0a0a12, #0a0a12) padding-box, linear-gradient(135deg, #10b981, #f59e0b, #10b981) border-box',
-                    borderWidth: '1px',
-                    borderStyle: 'solid',
-                    borderColor: 'transparent',
-                    boxShadow: '0 0 20px rgba(16, 185, 129, 0.08), 0 0 40px rgba(245, 158, 11, 0.05)',
-                }}
-            >
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3 whitespace-nowrap">
-                    {items.map((stat: any, i: number) => (
-                        <div key={i} className="flex items-center gap-1.5 sm:gap-3 justify-center sm:justify-start">
-                            {i !== 0 && <span className="text-white/50 text-[8px] sm:text-[10px]">✦</span>}
-                            <div className="flex items-center gap-1 sm:gap-1.5">
-                                <span className="text-sm sm:text-base font-bold text-foreground font-poppins tabular-nums">
-                                    <AnimatedCounter target={Number(stat.value) || 0} active={inView} />
-                                    <span className="text-primary">{stat.suffix || '+'}</span>
-                                </span>
-                                <span className="text-[10px] sm:text-xs font-medium tracking-wide opacity-80 uppercase text-muted-foreground">
-                                    {stat.label}
-                                </span>
-                            </div>
+        <div ref={ref} className="py-6 sm:py-10 px-4 sm:px-6 lg:px-8 relative z-[100]">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
+                {items.map((stat: any, i: number) => (
+                    <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={inView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ duration: 0.5, ease: 'easeOut', delay: i * 0.1 }}
+                        className="rounded-2xl px-4 py-5 sm:px-5 sm:py-6 border border-transparent text-center relative overflow-hidden group hover:scale-[1.03] transition-transform duration-300"
+                        style={{
+                            background: 'linear-gradient(#0a0a12, #0a0a12) padding-box, linear-gradient(135deg, #10b981, #f59e0b, #10b981) border-box',
+                            borderWidth: '1px',
+                            borderStyle: 'solid',
+                            borderColor: 'transparent',
+                            boxShadow: '0 0 20px rgba(16, 185, 129, 0.06), 0 0 40px rgba(245, 158, 11, 0.03)',
+                        }}
+                    >
+                        {/* Subtle glow on hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-emerald-500/5 to-amber-500/5 pointer-events-none" />
+                        <div className="relative z-10">
+                            <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground font-poppins tabular-nums">
+                                <AnimatedCounter target={Number(stat.value) || 0} active={inView} />
+                                <span className="text-primary">{stat.suffix || '+'}</span>
+                            </span>
+                            <p className="text-[10px] sm:text-xs font-semibold tracking-wider opacity-70 uppercase text-muted-foreground mt-1.5">
+                                {stat.label}
+                            </p>
                         </div>
-                    ))}
-                </div>
-            </motion.div>
+                    </motion.div>
+                ))}
+            </div>
         </div>
     );
 }
