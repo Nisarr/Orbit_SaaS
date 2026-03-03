@@ -7,7 +7,7 @@ export const config = {
 
 const SITE_URL = 'https://orbitsaas.cloud';
 const FAVICON_URL = `${SITE_URL}/favicon.png`;
-const FALLBACK_OG = `${SITE_URL}/og-banner.png`;
+const FALLBACK_OG = `${SITE_URL}/og-banner-v2.png`;
 
 function getClient() {
     return createClient({

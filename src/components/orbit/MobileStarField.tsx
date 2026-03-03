@@ -316,8 +316,8 @@ export function MobileStarField() {
             const dist = 35 + Math.random() * 15;
             const r1 = (a1 * Math.PI) / 180;
             const r2 = (a2 * Math.PI) / 180;
-            createIncomingComet(container, cx + Math.cos(r1) * dist, cy + Math.sin(r1) * dist * 0.6, cx, cy, color1, approachDur, icon1);
-            createIncomingComet(container, cx + Math.cos(r2) * dist, cy + Math.sin(r2) * dist * 0.6, cx, cy, color2, approachDur, icon2);
+            createIncomingComet(container, cx + Math.cos(r1) * dist, cy + Math.sin(r1) * dist, cx, cy, color1, approachDur, icon1);
+            createIncomingComet(container, cx + Math.cos(r2) * dist, cy + Math.sin(r2) * dist, cx, cy, color2, approachDur, icon2);
             setTimeout(() => {
                 const fireColors = ['#ff6b00', '#ff4500', '#ff8c00', '#ffd700', '#ff3300', '#ffaa00', color1, color2];
                 createBurst(container, cx, cy, fireColors, '#ff6b00', 14, 80);
@@ -354,8 +354,8 @@ export function MobileStarField() {
             const dist = 35 + Math.random() * 15;
             const r1 = (a1 * Math.PI) / 180;
             const r2 = (a2 * Math.PI) / 180;
-            createIncomingComet(container, cx + Math.cos(r1) * dist, cy + Math.sin(r1) * dist * 0.6, cx, cy, '#ffffff', approachDur);
-            createIncomingComet(container, cx + Math.cos(r2) * dist, cy + Math.sin(r2) * dist * 0.6, cx, cy, iconColor, approachDur, icon);
+            createIncomingComet(container, cx + Math.cos(r1) * dist, cy + Math.sin(r1) * dist, cx, cy, '#ffffff', approachDur);
+            createIncomingComet(container, cx + Math.cos(r2) * dist, cy + Math.sin(r2) * dist, cx, cy, iconColor, approachDur, icon);
             setTimeout(() => {
                 createBurst(container, cx, cy, [iconColor, '#ffffff', iconColor + 'cc'], iconColor, 10, 60);
                 playBoomRef.current();

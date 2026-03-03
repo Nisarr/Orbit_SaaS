@@ -14,17 +14,17 @@ export function useCollisionSound() {
     const audioPoolRef = useRef<HTMLAudioElement[]>([]);
     const mutedRef = useRef(false);
     const poolIndexRef = useRef(0);
-    const volumeRef = useRef(0.15);
+    const volumeRef = useRef(0.50);
 
     // Load mute preference and pre-create audio pool
     useEffect(() => {
         // Explicitly check for 'true' string. If not 'true' (e.g. null on first visit), it stays false (unmuted)
         mutedRef.current = localStorage.getItem('orbit_sound_muted') === 'true';
 
-        // Read volume (0-100 scale), default to 15% if not set
+        // Read volume (0-100 scale), default to 50% if not set
         const savedVol = localStorage.getItem('orbit_sound_volume');
-        const vol = savedVol !== null ? Number(savedVol) / 100 : 0.15;
-        volumeRef.current = vol > 0 ? vol : 0.15; // Never default to 0
+        const vol = savedVol !== null ? Number(savedVol) / 100 : 0.50;
+        volumeRef.current = vol > 0 ? vol : 0.50; // Never default to 0
 
         // Pre-create a small pool of Audio objects using inline data URL (no HTTP request, no IDM trigger)
         const pool: HTMLAudioElement[] = [];
@@ -92,7 +92,7 @@ export function useCollisionSound() {
             // Re-read volume from localStorage for real-time admin updates
             const savedVol = localStorage.getItem('orbit_sound_volume');
             // Boosted the base volume defaults slightly to ensure "dhurum" is heard
-            const base = savedVol !== null ? Math.max(0.3, Number(savedVol) / 100) : Math.max(0.4, volumeRef.current);
+            const base = savedVol !== null ? Math.max(0.3, Number(savedVol) / 100) : Math.max(0.50, volumeRef.current);
             audio.volume = Math.max(0, Math.min(1, base * (0.85 + Math.random() * 0.3))); // ±15% variation
 
             const playPromise = audio.play();
@@ -117,11 +117,11 @@ export function SoundToggle() {
     );
     const [visible, setVisible] = useState(false);
 
-    // Show only after 3 collisions
+    // Show from the very first collision
     useEffect(() => {
         const handler = (e: Event) => {
             const count = (e as CustomEvent).detail;
-            if (count >= 3 && !visible) {
+            if (count >= 1 && !visible) {
                 setVisible(true);
             }
         };

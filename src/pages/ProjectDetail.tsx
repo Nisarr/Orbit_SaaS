@@ -98,35 +98,37 @@ function ImageGallery({ images, title, onLightboxChange }: { images: string[]; t
                         <>
                             <button
                                 onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transform hover:scale-110 z-10"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition-all hidden sm:block opacity-0 sm:group-hover:opacity-100 transform hover:scale-110 z-10"
                             >
                                 <ChevronLeft className="w-6 h-6" />
                             </button>
                             <button
                                 onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transform hover:scale-110 z-10"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition-all hidden sm:block opacity-0 sm:group-hover:opacity-100 transform hover:scale-110 z-10"
                             >
                                 <ChevronRight className="w-6 h-6" />
                             </button>
-
-                            {/* Dots Indicator */}
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                                {images.map((_, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setDirection(idx > currentIndex ? 1 : -1);
-                                            setCurrentIndex(idx);
-                                        }}
-                                        className={`w-2 h-2 rounded-full transition-all ${idx === currentIndex ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/80'
-                                            }`}
-                                    />
-                                ))}
-                            </div>
                         </>
                     )}
                 </div>
+
+                {/* Dots Indicator (Moved outside the image overlay) */}
+                {images.length > 1 && (
+                    <div className="flex justify-center gap-2 mt-4 relative z-10 p-2">
+                        {images.map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDirection(idx > currentIndex ? 1 : -1);
+                                    setCurrentIndex(idx);
+                                }}
+                                className={`w-2 h-2 rounded-full transition-all ${idx === currentIndex ? 'bg-primary w-4' : 'bg-white/30 hover:bg-white/60'
+                                    }`}
+                            />
+                        ))}
+                    </div>
+                )}
             </motion.div>
 
             {/* Lightbox Overlay */}
