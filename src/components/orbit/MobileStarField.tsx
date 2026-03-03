@@ -312,7 +312,7 @@ export function MobileStarField() {
             const icon1 = SERVICE_ICONS[Math.floor(Math.random() * SERVICE_ICONS.length)];
             const icon2 = SERVICE_ICONS[Math.floor(Math.random() * SERVICE_ICONS.length)];
             const a1 = Math.random() * 360;
-            const a2 = a1 + 150 + Math.random() * 60;
+            const a2 = a1 + 180; // Perfectly head-to-head (180° opposite)
             const dist = 35 + Math.random() * 15;
             const r1 = (a1 * Math.PI) / 180;
             const r2 = (a2 * Math.PI) / 180;
@@ -350,7 +350,7 @@ export function MobileStarField() {
             const iconColor = ICON_COLORS[Math.floor(Math.random() * ICON_COLORS.length)];
             const icon = SERVICE_ICONS[Math.floor(Math.random() * SERVICE_ICONS.length)];
             const a1 = Math.random() * 360;
-            const a2 = a1 + 160 + Math.random() * 40;
+            const a2 = a1 + 180; // Perfectly head-to-head
             const dist = 35 + Math.random() * 15;
             const r1 = (a1 * Math.PI) / 180;
             const r2 = (a2 * Math.PI) / 180;
