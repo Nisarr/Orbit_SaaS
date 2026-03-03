@@ -92,24 +92,6 @@ function ImageGallery({ images, title, onLightboxChange }: { images: string[]; t
                             />
                         </AnimatePresence>
                     </div>
-
-                    {/* Navigation Arrows (Only if > 1 image) */}
-                    {images.length > 1 && (
-                        <>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition-all hidden sm:block opacity-0 sm:group-hover:opacity-100 transform hover:scale-110 z-10"
-                            >
-                                <ChevronLeft className="w-6 h-6" />
-                            </button>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition-all hidden sm:block opacity-0 sm:group-hover:opacity-100 transform hover:scale-110 z-10"
-                            >
-                                <ChevronRight className="w-6 h-6" />
-                            </button>
-                        </>
-                    )}
                 </div>
 
                 {/* Premium Navigation & Dots Indicator */}
@@ -175,18 +157,22 @@ function ImageGallery({ images, title, onLightboxChange }: { images: string[]; t
 
                         {images.length > 1 && (
                             <>
-                                <button
+                                <motion.button
                                     onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                                    className="absolute left-4 md:left-8 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors hidden sm:block opacity-100 sm:opacity-70 sm:hover:opacity-100"
+                                    whileHover={{ scale: 1.1, backgroundColor: '#16A34A' }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className="absolute left-4 md:left-8 z-20 p-4 rounded-full bg-[#22C55E] text-white transition-all hidden sm:flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]"
                                 >
-                                    <ChevronLeft className="w-10 h-10" />
-                                </button>
-                                <button
+                                    <ChevronLeft className="w-8 h-8" />
+                                </motion.button>
+                                <motion.button
                                     onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                                    className="absolute right-4 md:right-8 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors hidden sm:block opacity-100 sm:opacity-70 sm:hover:opacity-100"
+                                    whileHover={{ scale: 1.1, backgroundColor: '#16A34A' }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className="absolute right-4 md:right-8 z-20 p-4 rounded-full bg-[#22C55E] text-white transition-all hidden sm:flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]"
                                 >
-                                    <ChevronRight className="w-10 h-10" />
-                                </button>
+                                    <ChevronRight className="w-8 h-8" />
+                                </motion.button>
                             </>
                         )}
 

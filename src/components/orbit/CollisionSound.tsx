@@ -2,48 +2,80 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import { BOOM_DATA_URL } from './boomDataUrl';
 
 /**
- * useCollisionSound — synthesized "dhurum" impact sound via Web Audio API.
+ * useCollisionSound — "dhurum" impact sound via Web Audio API.
  *
  * Returns `playBoom()` function. Sound respects user's mute preference
  * stored in localStorage ('orbit_sound_muted').
  * Sound only plays while the hero section is visible.
  *
- * AudioContext is lazily created and unlocked on first user interaction.
+ * Uses AudioContext + AudioBufferSourceNode (NOT HTMLAudioElement) for
+ * reliable playback on mobile browsers. Mobile browsers block
+ * HTMLAudioElement.play() outside user gestures, but Web Audio API only
+ * needs AudioContext.resume() once during any user gesture.
  */
+
+// ── Shared singleton so multiple hook instances reuse one context ──
+let _audioCtx: AudioContext | null = null;
+let _audioBuffer: AudioBuffer | null = null;
+let _bufferLoading = false;
+let _unlocked = false;
+
+function getAudioCtx(): AudioContext {
+    if (!_audioCtx) {
+        _audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return _audioCtx;
+}
+
+/** Decode the base64 data-URL into an AudioBuffer (once). */
+async function ensureBuffer(): Promise<AudioBuffer | null> {
+    if (_audioBuffer) return _audioBuffer;
+    if (_bufferLoading) return null; // already in progress
+    _bufferLoading = true;
+    try {
+        const ctx = getAudioCtx();
+        // Strip the data-URL header to get raw base64
+        const base64 = BOOM_DATA_URL.split(',')[1];
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        _audioBuffer = await ctx.decodeAudioData(bytes.buffer);
+    } catch {
+        _bufferLoading = false;
+    }
+    return _audioBuffer;
+}
+
 export function useCollisionSound() {
-    const audioPoolRef = useRef<HTMLAudioElement[]>([]);
     const mutedRef = useRef(false);
-    const poolIndexRef = useRef(0);
     const volumeRef = useRef(0.50);
 
-    // Load mute preference and pre-create audio pool
+    // Load mute preference & decode audio buffer on mount
     useEffect(() => {
-        // Explicitly check for 'true' string. If not 'true' (e.g. null on first visit), it stays false (unmuted)
         mutedRef.current = localStorage.getItem('orbit_sound_muted') === 'true';
 
-        // Read volume (0-100 scale), default to 50% if not set
         const savedVol = localStorage.getItem('orbit_sound_volume');
         const vol = savedVol !== null ? Number(savedVol) / 100 : 0.50;
-        volumeRef.current = vol > 0 ? vol : 0.50; // Never default to 0
+        volumeRef.current = vol > 0 ? vol : 0.50;
 
-        // Pre-create a small pool of Audio objects using inline data URL (no HTTP request, no IDM trigger)
-        const pool: HTMLAudioElement[] = [];
-        for (let i = 0; i < 3; i++) {
-            const audio = new Audio(BOOM_DATA_URL);
-            audio.volume = volumeRef.current;
-            pool.push(audio);
-        }
-        audioPoolRef.current = pool;
+        // Start decoding in background (doesn't need user gesture)
+        ensureBuffer();
 
-        // Unlock audio on first user gesture (mobile browsers block autoplay)
+        // Resume AudioContext on first user gesture (required on mobile)
         const unlock = () => {
-            pool.forEach(a => {
-                a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => { });
-            });
+            if (_unlocked) return;
+            const ctx = getAudioCtx();
+            if (ctx.state === 'suspended') {
+                ctx.resume().catch(() => { });
+            }
+            _unlocked = true;
             window.removeEventListener('touchstart', unlock);
             window.removeEventListener('click', unlock);
         };
-        window.addEventListener('touchstart', unlock, { once: true });
+        // If context is already running (desktop), mark unlocked
+        if (_audioCtx && _audioCtx.state === 'running') _unlocked = true;
+
+        window.addEventListener('touchstart', unlock, { once: true, passive: true });
         window.addEventListener('click', unlock, { once: true });
 
         return () => {
@@ -81,24 +113,29 @@ export function useCollisionSound() {
         }
 
         try {
-            const pool = audioPoolRef.current;
-            if (pool.length === 0) return;
+            if (!_audioBuffer || !_audioCtx) return;
+            const ctx = _audioCtx;
+            if (ctx.state === 'suspended') {
+                ctx.resume().catch(() => { });
+                return; // skip this one; next collision will play
+            }
 
-            // Round-robin through the pool so overlapping collisions still play
-            const audio = pool[poolIndexRef.current % pool.length];
-            poolIndexRef.current++;
-
-            audio.currentTime = 0;
             // Re-read volume from localStorage for real-time admin updates
             const savedVol = localStorage.getItem('orbit_sound_volume');
-            // Boosted the base volume defaults slightly to ensure "dhurum" is heard
             const base = savedVol !== null ? Math.max(0.3, Number(savedVol) / 100) : Math.max(0.50, volumeRef.current);
-            audio.volume = Math.max(0, Math.min(1, base * (0.85 + Math.random() * 0.3))); // ±15% variation
+            const finalVol = Math.max(0, Math.min(1, base * (0.85 + Math.random() * 0.3)));
 
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch((e) => console.log('Collision Audio blocked:', e));
-            }
+            // Create a fresh source node (they are one-shot, this is by design)
+            const source = ctx.createBufferSource();
+            source.buffer = _audioBuffer;
+
+            // Apply volume via GainNode
+            const gain = ctx.createGain();
+            gain.gain.value = finalVol;
+            source.connect(gain);
+            gain.connect(ctx.destination);
+
+            source.start(0);
         } catch {
             // Silently fail
         }
