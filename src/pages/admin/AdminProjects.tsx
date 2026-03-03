@@ -205,14 +205,14 @@ const DEFAULT_PROJECT: UnifiedProject = {
 
 function ProjectEditor({ item, update, categories: availableCategories }: { item: UnifiedProject; update: (i: UnifiedProject) => void; categories: string[] }) {
     const [tab, setTab] = useState<'en' | 'bn'>('en');
-    const [collapsedSections, setCollapsedSections] = useState<Set<number>>(new Set());
+    const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
     const [jsonDescOpen, setJsonDescOpen] = useState(false);
     const [jsonDescHelp, setJsonDescHelp] = useState(false);
     const [jsonDescText, setJsonDescText] = useState('');
     const [jsonDescError, setJsonDescError] = useState('');
 
     const toggleSection = (index: number) => {
-        setCollapsedSections(prev => {
+        setExpandedSections(prev => {
             const next = new Set(prev);
             if (next.has(index)) next.delete(index);
             else next.add(index);
@@ -718,7 +718,7 @@ function ProjectEditor({ item, update, categories: availableCategories }: { item
                                     <span className="text-xs text-muted-foreground ml-2">({paragraphs.length} sections — each becomes a card)</span>
                                 </label>
                                 {paragraphs.map((para, pi) => {
-                                    const isCollapsed = collapsedSections.has(pi);
+                                    const isCollapsed = !expandedSections.has(pi);
                                     return (
                                         <div key={pi} className="rounded-xl border border-border bg-secondary/30 overflow-hidden relative group">
                                             <div
