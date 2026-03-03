@@ -150,6 +150,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 imagesWarmed,
             });
         }
+        // DELETE: Clear all cache
+        if (req.method === 'DELETE') {
+            const { isAuthorized } = await import('./lib/auth.js');
+            if (!isAuthorized(req)) {
+                return res.status(401).json({ error: 'Unauthorized' });
+            }
+
+            let rowsDeleted = 0;
+            try {
+                const result = await db.execute('DELETE FROM content_cache');
+                rowsDeleted = result.rowsAffected;
+            } catch {
+                // Table might not exist yet — that's fine
+            }
+
+            // Also clear AI gists
+            try {
+                await db.execute('DELETE FROM kb_gist');
+            } catch {
+                // kb_gist table might not exist — skip
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: 'Cache cleared successfully',
+                rowsDeleted,
+                clearedAt: new Date().toISOString(),
+            });
+        }
 
         return res.status(405).json({ error: 'Method not allowed' });
     } catch (error) {

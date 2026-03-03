@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,7 +7,7 @@ import {
     LayoutDashboard, Type, ShoppingCart, Users, FolderOpen,
     MessageCircle, Globe, Shield, LogOut, Menu, X,
     Lightbulb, Phone, FileText, Cpu, CloudUpload, Loader2, Link as LinkIcon,
-    Database, Mail, BarChart3, Star
+    Database, Mail, BarChart3, Star, Trash2, CheckCircle2, XCircle
 } from 'lucide-react';
 
 const navItems = [
@@ -30,40 +30,200 @@ const navItems = [
     { label: 'Backup', path: '/admin/backup', icon: Database },
 ];
 
+// Progress toast renderer
+function ProgressToast({ progress, label, color }: { progress: number; label: string; color: string }) {
+    const pct = Math.round(progress);
+    return (
+        <div className="flex flex-col gap-2 w-full">
+            <div className="flex items-center justify-between text-sm">
+                <span className="font-medium text-foreground">{label}</span>
+                <span className="text-muted-foreground font-mono text-xs">{pct}%</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                <div
+                    className="h-full rounded-full transition-all duration-300 ease-out"
+                    style={{
+                        width: `${pct}%`,
+                        background: `linear-gradient(90deg, ${color}, ${color}dd)`,
+                        boxShadow: `0 0 8px ${color}66`,
+                    }}
+                />
+            </div>
+        </div>
+    );
+}
+
 export default function AdminLayout() {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [publishing, setPublishing] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Simulate progress: fast at first, slows toward 90%, stops there until done
+    const startProgress = useCallback((toastId: string | number, label: string, color: string) => {
+        let progress = 0;
+        const update = () => {
+            // Accelerate to ~85%, then crawl
+            const remaining = 90 - progress;
+            const increment = Math.max(0.3, remaining * 0.08);
+            progress = Math.min(90, progress + increment);
+            toast.custom(
+                () => <ProgressToast progress={progress} label={label} color={color} />,
+                { id: toastId, duration: Infinity }
+            );
+        };
+        progressRef.current = setInterval(update, 200);
+        // Initial render
+        toast.custom(
+            () => <ProgressToast progress={0} label={label} color={color} />,
+            { id: toastId, duration: Infinity }
+        );
+        return toastId;
+    }, []);
+
+    const stopProgress = useCallback(() => {
+        if (progressRef.current) {
+            clearInterval(progressRef.current);
+            progressRef.current = null;
+        }
+    }, []);
 
     const handlePublishCache = async () => {
         setPublishing(true);
-        const toastId = toast.loading('Publishing cache...');
+        const toastId = toast.custom(() => null, { duration: Infinity });
+        startProgress(toastId, 'Publishing cache...', '#10b981');
         try {
             const token = localStorage.getItem('admin_token');
             const API_BASE = import.meta.env.VITE_API_URL || '';
             const res = await fetch(`${API_BASE}/api/cache`, {
                 method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
 
+            stopProgress();
+
             if (res.status === 401) {
-                toast.error('Session expired. Please log in again.', { id: toastId });
+                toast.custom(
+                    () => (
+                        <div className="flex items-center gap-2 text-sm">
+                            <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                            <span>Session expired. Please log in again.</span>
+                        </div>
+                    ),
+                    { id: toastId, duration: 4000 }
+                );
                 handleLogout();
                 return;
             }
 
             if (!res.ok) throw new Error('Cache publish failed');
 
+            // Complete to 100%
+            toast.custom(
+                () => <ProgressToast progress={100} label="Publishing cache..." color="#10b981" />,
+                { id: toastId, duration: 600 }
+            );
+
             const data = await res.json();
             const imgInfo = data.imagesWarmed != null ? ` · ${data.imagesWarmed}/${data.imagesFound} images warmed` : '';
-            toast.success(`Cache published!${imgInfo} ${data.cachedAt ? new Date(data.cachedAt).toLocaleTimeString() : ''}`, { id: toastId });
+
+            setTimeout(() => {
+                toast.custom(
+                    () => (
+                        <div className="flex items-center gap-2 text-sm">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                            <span className="text-foreground">
+                                Cache published!{imgInfo} {data.cachedAt ? new Date(data.cachedAt).toLocaleTimeString() : ''}
+                            </span>
+                        </div>
+                    ),
+                    { id: toastId, duration: 5000 }
+                );
+            }, 700);
         } catch (err) {
+            stopProgress();
             console.error(err);
-            toast.error('Failed to publish cache', { id: toastId });
+            toast.custom(
+                () => (
+                    <div className="flex items-center gap-2 text-sm">
+                        <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                        <span>Failed to publish cache</span>
+                    </div>
+                ),
+                { id: toastId, duration: 4000 }
+            );
         } finally {
             setPublishing(false);
+        }
+    };
+
+    const handleDeleteCache = async () => {
+        if (!confirm('Are you sure you want to delete all cached content? The site will fall back to live DB queries until republished.')) return;
+        setDeleting(true);
+        const toastId = toast.custom(() => null, { duration: Infinity });
+        startProgress(toastId, 'Deleting cache...', '#f59e0b');
+        try {
+            const token = localStorage.getItem('admin_token');
+            const API_BASE = import.meta.env.VITE_API_URL || '';
+            const res = await fetch(`${API_BASE}/api/cache`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            stopProgress();
+
+            if (res.status === 401) {
+                toast.custom(
+                    () => (
+                        <div className="flex items-center gap-2 text-sm">
+                            <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                            <span>Session expired. Please log in again.</span>
+                        </div>
+                    ),
+                    { id: toastId, duration: 4000 }
+                );
+                handleLogout();
+                return;
+            }
+
+            if (!res.ok) throw new Error('Cache delete failed');
+
+            // Complete to 100%
+            toast.custom(
+                () => <ProgressToast progress={100} label="Deleting cache..." color="#f59e0b" />,
+                { id: toastId, duration: 600 }
+            );
+
+            const data = await res.json();
+
+            setTimeout(() => {
+                toast.custom(
+                    () => (
+                        <div className="flex items-center gap-2 text-sm">
+                            <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0" />
+                            <span className="text-foreground">
+                                Cache cleared! {data.clearedAt ? new Date(data.clearedAt).toLocaleTimeString() : ''}
+                            </span>
+                        </div>
+                    ),
+                    { id: toastId, duration: 5000 }
+                );
+            }, 700);
+        } catch (err) {
+            stopProgress();
+            console.error(err);
+            toast.custom(
+                () => (
+                    <div className="flex items-center gap-2 text-sm">
+                        <XCircle className="w-4 h-4 text-red-500 shrink-0" />
+                        <span>Failed to delete cache</span>
+                    </div>
+                ),
+                { id: toastId, duration: 4000 }
+            );
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -128,6 +288,14 @@ export default function AdminLayout() {
                     >
                         {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
                         {publishing ? 'Publishing...' : 'Publish Cache'}
+                    </button>
+                    <button
+                        onClick={handleDeleteCache}
+                        disabled={deleting}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-amber-500 hover:bg-amber-500/10 transition-colors w-full cursor-pointer disabled:opacity-50"
+                    >
+                        {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        {deleting ? 'Deleting...' : 'Delete Cache'}
                     </button>
                     <a
                         href="/"
