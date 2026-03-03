@@ -495,7 +495,6 @@ export default function ProjectDetail() {
 
                     {/* Right: Suggested Projects Sidebar */}
                     {(() => {
-                        const currentCats: string[] = project.categories || (project.category ? [project.category] : []);
                         const buildItem = (enItem: any, i: number) => {
                             const bnItem = bnItems[i];
                             const showBn = lang === 'bn' && bnItem && bnItem.title && bnItem.title.trim() !== '';
@@ -506,23 +505,10 @@ export default function ProjectDetail() {
                         let suggested = enItems
                             .map((enItem: any, i: number) => {
                                 if (i === idx) return null;
-                                const itemCats: string[] = enItem.categories || (enItem.category ? [enItem.category] : []);
-                                const hasShared = currentCats.length > 0 && itemCats.some((c: string) => currentCats.includes(c));
-                                if (!hasShared) return null;
                                 return buildItem(enItem, i);
                             })
                             .filter(Boolean)
                             .slice(0, 8);
-
-                        if (suggested.length === 0) {
-                            suggested = enItems
-                                .map((enItem: any, i: number) => {
-                                    if (i === idx) return null;
-                                    return buildItem(enItem, i);
-                                })
-                                .filter(Boolean)
-                                .slice(0, 8);
-                        }
 
                         if (suggested.length === 0) return null;
 
