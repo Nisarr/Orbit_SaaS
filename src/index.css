@@ -30,19 +30,19 @@
 
   /* Default (Dark mode) — Emerald & Rose Gold Theme */
   --background: #08080f;
-  --foreground: #e8e8f0;
+  --foreground: #f8f8ff;
   --card: #10101a;
-  --card-foreground: #e8e8f0;
+  --card-foreground: #f8f8ff;
   --popover: #10101a;
-  --popover-foreground: #e8e8f0;
+  --popover-foreground: #f8f8ff;
   --primary: #10b981;
   --primary-foreground: #ffffff;
   --secondary: #141420;
-  --secondary-foreground: #e8e8f0;
+  --secondary-foreground: #f8f8ff;
   --muted: #141420;
-  --muted-foreground: #8888a0;
+  --muted-foreground: #d1d1e0;
   --accent: #141420;
-  --accent-foreground: #e8e8f0;
+  --accent-foreground: #f8f8ff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #1e2a24;
@@ -924,17 +924,31 @@ img.no-browser-trigger {
 /* ── Word Cards: slim transparent pill badges for highlighted keywords ── */
 .word-card {
   display: inline;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #FFD700;
+  text-shadow: 0 0 2px rgba(212, 168, 67, 0.4);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
   border-radius: 6px;
   padding: 1px 7px;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.08);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12), inset 0 0 5px rgba(16, 185, 129, 0.05);
+  transition: all 0.3s ease;
 }
 
-.word-card:hover {
-  background: rgba(16, 185, 129, 0.14);
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.15);
+/* ── White Word Cards: alternative style for high contrast keywords ── */
+.word-card-white {
+  display: inline;
+  color: #FFFFFF;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 1px 7px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.08), inset 0 0 5px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.word-card-white:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
 }

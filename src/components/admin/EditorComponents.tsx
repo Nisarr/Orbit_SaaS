@@ -221,20 +221,21 @@ export function AIEnhanceButton({
 }
 
 /** Parse rich markers into segments for preview rendering */
-function parseRichSegments(str: string): { text: string; bold: boolean; card: boolean }[] {
-    const parts: { text: string; bold: boolean; card: boolean }[] = [];
-    // Order matters: match **[[...]]** first, then **...**, then [[...]]
-    const regex = /\*\*\[\[(.+?)\]\]\*\*|\*\*(.+?)\*\*|\[\[(.+?)\]\]/g;
+function parseRichSegments(str: string): { text: string; bold: boolean; card: boolean; whiteCard: boolean }[] {
+    const parts: { text: string; bold: boolean; card: boolean; whiteCard: boolean }[] = [];
+    const regex = /\*\*\[\[(.+?)\]\]\*\*|\*\*\{\{(.+?)\}\}\*\*|\*\*(.+?)\*\*|\[\[(.+?)\]\]|\{\{(.+?)\}\}/g;
     let last = 0;
     let m: RegExpExecArray | null;
     while ((m = regex.exec(str)) !== null) {
-        if (m.index > last) parts.push({ text: str.slice(last, m.index), bold: false, card: false });
-        if (m[1] !== undefined) parts.push({ text: m[1], bold: true, card: true });
-        else if (m[2] !== undefined) parts.push({ text: m[2], bold: true, card: false });
-        else if (m[3] !== undefined) parts.push({ text: m[3], bold: false, card: true });
+        if (m.index > last) parts.push({ text: str.slice(last, m.index), bold: false, card: false, whiteCard: false });
+        if (m[1] !== undefined) parts.push({ text: m[1], bold: true, card: true, whiteCard: false });
+        else if (m[2] !== undefined) parts.push({ text: m[2], bold: true, card: false, whiteCard: true });
+        else if (m[3] !== undefined) parts.push({ text: m[3], bold: true, card: false, whiteCard: false });
+        else if (m[4] !== undefined) parts.push({ text: m[4], bold: false, card: true, whiteCard: false });
+        else if (m[5] !== undefined) parts.push({ text: m[5], bold: false, card: false, whiteCard: true });
         last = m.index + m[0].length;
     }
-    if (last < str.length) parts.push({ text: str.slice(last), bold: false, card: false });
+    if (last < str.length) parts.push({ text: str.slice(last), bold: false, card: false, whiteCard: false });
     return parts;
 }
 
@@ -286,7 +287,7 @@ export function TextField({
     }, [selToolbar, onChange]);
 
     // Check if value has any rich markers for preview
-    const hasRichMarkers = multiline && (/\*\*/.test(value) || /\[\[/.test(value));
+    const hasRichMarkers = multiline && (/\*\*/.test(value) || /\[\[/.test(value) || /\{\{/.test(value));
 
     return (
         <div className="relative">
@@ -339,16 +340,28 @@ export function TextField({
                                 <span className="px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold">Card</span>
                             </button>
                             <div className="w-px h-4 bg-white/10" />
-                            {/* Bold + Card */}
+                            {/* Bold + Green Card */}
                             <button
                                 type="button"
                                 onMouseDown={e => { e.preventDefault(); wrapSelection('**[[', ']]**'); }}
                                 className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer"
-                                title="Bold + Card"
+                                title="Bold + Green Card"
                             >
                                 <span className="text-sm font-black">B</span>
                                 <span className="text-[9px]">+</span>
-                                <span className="px-1 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-[10px] font-bold">Card</span>
+                                <span className="px-1 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/20 text-[10px] font-bold text-emerald-400">Green</span>
+                            </button>
+                            <div className="w-px h-4 bg-white/10" />
+                            {/* Bold + White Card */}
+                            <button
+                                type="button"
+                                onMouseDown={e => { e.preventDefault(); wrapSelection('**{{', '}}**'); }}
+                                className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold text-white hover:bg-white/10 transition-colors cursor-pointer"
+                                title="Bold + White Card"
+                            >
+                                <span className="text-sm font-black">B</span>
+                                <span className="text-[9px]">+</span>
+                                <span className="px-1 py-0.5 rounded border border-white/30 bg-white/20 text-[10px] font-bold text-white">White</span>
                             </button>
                         </div>
                     )}
@@ -357,10 +370,11 @@ export function TextField({
                         <div className="mt-2 px-3 py-2 rounded-lg bg-background/50 border border-border/50 text-sm text-muted-foreground leading-relaxed flex flex-wrap gap-x-[0.3em]">
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-bold w-full mb-1">Preview</span>
                             {parseRichSegments(value).map((seg, i) => {
-                                if (!seg.bold && !seg.card) return <span key={i}>{seg.text}</span>;
+                                if (!seg.bold && !seg.card && !seg.whiteCard) return <span key={i}>{seg.text}</span>;
                                 const classes = [
                                     seg.bold ? 'font-bold text-foreground' : '',
                                     seg.card ? 'word-card' : '',
+                                    seg.whiteCard ? 'word-card-white' : '',
                                 ].filter(Boolean).join(' ');
                                 return <span key={i} className={classes}>{seg.text}</span>;
                             })}

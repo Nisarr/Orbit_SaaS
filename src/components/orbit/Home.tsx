@@ -5,21 +5,23 @@ import { useLang } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 
-/** Parse rich markers: **bold**, [[card]], **[[bold+card]]** */
-function parseSubtitleSegments(str: string): { text: string; bold: boolean; card: boolean }[] {
-  const parts: { text: string; bold: boolean; card: boolean }[] = [];
-  const regex = /\*\*\[\[(.+?)\]\]\*\*|\*\*(.+?)\*\*|\[\[(.+?)\]\]/g;
+/** Parse rich markers: **bold**, [[green-card]], **[[bold+green]]**, {{white-card}}, **{{bold+white}}** */
+function parseSubtitleSegments(str: string): { text: string; bold: boolean; card: boolean; whiteCard: boolean }[] {
+  const parts: { text: string; bold: boolean; card: boolean; whiteCard: boolean }[] = [];
+  const regex = /\*\*\[\[(.+?)\]\]\*\*|\*\*\{\{(.+?)\}\}\*\*|\*\*(.+?)\*\*|\[\[(.+?)\]\]|\{\{(.+?)\}\}/g;
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = regex.exec(str)) !== null) {
-    if (m.index > last) parts.push({ text: str.slice(last, m.index), bold: false, card: false });
-    if (m[1] !== undefined) parts.push({ text: m[1], bold: true, card: true });
-    else if (m[2] !== undefined) parts.push({ text: m[2], bold: true, card: false });
-    else if (m[3] !== undefined) parts.push({ text: m[3], bold: false, card: true });
+    if (m.index > last) parts.push({ text: str.slice(last, m.index), bold: false, card: false, whiteCard: false });
+    if (m[1] !== undefined) parts.push({ text: m[1], bold: true, card: true, whiteCard: false });
+    else if (m[2] !== undefined) parts.push({ text: m[2], bold: true, card: false, whiteCard: true });
+    else if (m[3] !== undefined) parts.push({ text: m[3], bold: true, card: false, whiteCard: false });
+    else if (m[4] !== undefined) parts.push({ text: m[4], bold: false, card: true, whiteCard: false });
+    else if (m[5] !== undefined) parts.push({ text: m[5], bold: false, card: false, whiteCard: true });
     last = m.index + m[0].length;
   }
-  if (last < str.length) parts.push({ text: str.slice(last), bold: false, card: false });
-  return parts.length ? parts : [{ text: str, bold: false, card: false }];
+  if (last < str.length) parts.push({ text: str.slice(last), bold: false, card: false, whiteCard: false });
+  return parts.length ? parts : [{ text: str, bold: false, card: false, whiteCard: false }];
 }
 
 /* ── Home component ───────────────────────────────────────────── */
@@ -332,7 +334,7 @@ export function Home() {
                     ease: 'easeOut',
                     delay: isFirstVisit ? 0.15 : 0.5,
                   }}
-                  className="block mt-2 sm:mt-6 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4"
+                  className="block mt-6 sm:mt-12 md:mt-16 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4"
                   style={{ color: titleColor }}
                 >
                   {t.hero.title}
@@ -341,8 +343,8 @@ export function Home() {
             </AnimatePresence>
           </div>
 
-          {/* Subtitle — word-by-word reveal with rich formatting */}
-          <motion.p className="text-muted-foreground text-[13.5px] sm:text-base md:text-lg max-w-3xl mx-auto px-2 sm:px-0 mb-[3dvh] sm:mb-8 leading-relaxed flex flex-wrap justify-center gap-x-[0.35em] font-medium">
+          {/* Subtitle — word-by-word reveal with rich formatting + mid-pause */}
+          <motion.p className="text-muted-foreground text-[13.5px] sm:text-base md:text-lg w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-8 sm:mt-14 mb-[5dvh] sm:mb-16 leading-[1.9] flex flex-wrap justify-center gap-x-[0.35em] font-medium">
             {isLowPerf ? (
               <motion.span
                 initial={{ opacity: 0 }}
@@ -350,24 +352,34 @@ export function Home() {
                 transition={{ duration: 0.4, delay: baseDelay + 0.9 }}
               >
                 {subtitleSegments.map((seg, si) => {
-                  if (!seg.bold && !seg.card) return <span key={si}>{seg.text}</span>;
+                  if (!seg.bold && !seg.card && !seg.whiteCard) return <span key={si}>{seg.text}</span>;
                   const cls = [
                     seg.bold ? 'font-bold text-white' : '',
                     seg.card ? 'word-card' : '',
+                    seg.whiteCard ? 'word-card-white' : '',
                   ].filter(Boolean).join(' ');
                   return <span key={si} className={cls}>{seg.text}</span>;
                 })}
               </motion.span>
             ) : (
               (() => {
+                // Count total words for mid-pause calculation
+                let totalWords = 0;
+                subtitleSegments.forEach(seg => { totalWords += seg.text.split(' ').filter(Boolean).length; });
+                const midPoint = Math.ceil(totalWords / 2);
+                const midPause = 0.6; // seconds to pause between halves
+
                 let wordIndex = 0;
                 return subtitleSegments.map((seg, si) => {
-                  if (seg.bold || seg.card) {
-                    const delay = baseDelay + 0.9 + wordIndex * 0.04;
-                    wordIndex += seg.text.split(' ').length;
+                  if (seg.bold || seg.card || seg.whiteCard) {
+                    const wordsInSeg = seg.text.split(' ').length;
+                    const pastMid = wordIndex >= midPoint;
+                    const delay = baseDelay + 0.9 + wordIndex * 0.04 + (pastMid ? midPause : 0);
+                    wordIndex += wordsInSeg;
                     const cls = [
                       seg.bold ? 'font-bold text-white' : '',
                       seg.card ? 'word-card' : '',
+                      seg.whiteCard ? 'word-card-white' : '',
                     ].filter(Boolean).join(' ');
                     return (
                       <motion.span
@@ -382,7 +394,8 @@ export function Home() {
                     );
                   }
                   return seg.text.split(' ').filter(Boolean).map((word, wi) => {
-                    const delay = baseDelay + 0.9 + wordIndex * 0.04;
+                    const pastMid = wordIndex >= midPoint;
+                    const delay = baseDelay + 0.9 + wordIndex * 0.04 + (pastMid ? midPause : 0);
                     wordIndex++;
                     return (
                       <motion.span
