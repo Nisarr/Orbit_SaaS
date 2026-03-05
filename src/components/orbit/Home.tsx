@@ -216,14 +216,14 @@ export function Home() {
       ref={sectionRef}
       id="hero"
       className={`relative flex items-center justify-center overflow-x-hidden transition-all duration-1000 ease-in-out ${loaderComplete
-        ? 'pt-0 pb-12 sm:pt-20 sm:pb-0'
-        : 'pt-0 pb-12 sm:pt-20 sm:pb-0'
+        ? 'pt-0 pb-12 sm:pt-6 sm:pb-0'
+        : 'pt-0 pb-12 sm:pt-6 sm:pb-0'
         }`}
       style={{ minHeight: heroHeight }}
     >
 
       <div
-        className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+        className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto lg:-mt-12"
         style={{ contain: 'none' }}
       >
         <div className={`px-4 sm:px-14 py-8 sm:py-10 flex flex-col justify-between items-center transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[550px]'} sm:min-h-0`}>
@@ -304,7 +304,7 @@ export function Home() {
             );
           })()}
 
-          <div className={`text-foreground leading-[1] mb-2 sm:mb-10 flex flex-col items-center justify-center relative transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[140px] sm:min-h-[180px]'}`}>
+          <div className={`text-foreground leading-[1] mb-1 sm:mb-1 flex flex-col items-center justify-center relative transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[140px] sm:min-h-[180px]'}`}>
 
             {/* ─── 3D Comet-Dice Canvas Loader ─── */}
             {!loaderComplete && orbitRects.length > 0 && saasRect && (
@@ -365,7 +365,7 @@ export function Home() {
                 initial={{ opacity: 0, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-                className={`${isInHero ? 'animate-title-breath' : ''} mt-6 sm:mt-8 md:mt-12 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
+                className={`${isInHero ? 'animate-title-breath' : ''} mt-1 sm:mt-2 md:mt-4 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
                 style={{ color: titleColor }}
               >
                 {t.hero.title.split(' ').filter(Boolean).map((word: string, wi: number) => {
@@ -395,7 +395,7 @@ export function Home() {
             initial={{ opacity: 0, filter: 'blur(10px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-            className="text-muted-foreground text-[12.5px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-12 sm:mt-16 mb-10 sm:mb-16 leading-[1.6] flex flex-wrap justify-center gap-x-[0.6em] gap-y-[0.7rem] sm:gap-y-4 font-medium tracking-wide"
+            className="text-muted-foreground text-[12.5px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-4 sm:mt-6 mb-4 sm:mb-6 leading-[1.6] flex flex-wrap justify-center gap-x-[0.4em] gap-y-[0.4rem] sm:gap-y-3 font-medium tracking-wide"
           >
             {(
               (() => {
@@ -458,7 +458,7 @@ export function Home() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 60, damping: 16, delay: baseDelay + 1.6 }}
-          className="flex flex-row w-full justify-between sm:justify-center sm:w-auto gap-4 sm:gap-10 items-center px-1 sm:px-0 mt-24 sm:mt-40"
+          className="flex flex-row w-full justify-between sm:justify-center sm:w-auto gap-4 sm:gap-10 items-center px-1 sm:px-0 mt-4 sm:mt-8 lg:mt-16"
         >
           {/* Relative Container for Dropdown */}
           <div className="relative w-auto sm:w-auto">
