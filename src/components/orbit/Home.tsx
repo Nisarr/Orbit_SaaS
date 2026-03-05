@@ -164,6 +164,9 @@ export function Home() {
   }, []);
 
   const handleLoaderComplete = useCallback(() => {
+    // Safety: Force all letters to reveal just in case canvas triggers were missed
+    setRevealedLetters(new Array(5).fill(true));
+    setSaasRevealed(true);
     setLoaderComplete(true);
     setTimeout(() => setIsHeroLoaded(true), 300);
   }, []);
@@ -226,7 +229,7 @@ export function Home() {
         className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto lg:-mt-12"
         style={{ contain: 'none' }}
       >
-        <div className={`px-4 sm:px-14 py-8 sm:py-10 flex flex-col justify-between items-center transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[550px]'} sm:min-h-0`}>
+        <div className={`px-4 sm:px-14 py-8 sm:py-10 flex flex-col justify-between items-center transition-all duration-700 ease-in-out ${loaderComplete ? 'min-h-0' : 'min-h-[350px]'} sm:min-h-0`}>
           {/* Badge — slides down with spring */}
           {t.hero.tagline && (() => {
             const line1 = t.hero.tagline;

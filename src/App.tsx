@@ -85,7 +85,7 @@ function PublicSite() {
     const timer = setTimeout(() => {
       setIsLoaded(true);
       sessionStorage.setItem('orbit_has_visited', 'true');
-    }, 3400); // Slightly after the 3.2s dice animation
+    }, 10500); // Wait for the full 10s majestic sequence in Home.tsx
     return () => clearTimeout(timer);
   }, [isLoaded]);
 
