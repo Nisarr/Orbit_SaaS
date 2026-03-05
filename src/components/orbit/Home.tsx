@@ -344,74 +344,85 @@ export function Home() {
           </div>
 
           {/* Subtitle — word-by-word reveal with rich formatting + mid-pause */}
-          <motion.p className="text-muted-foreground text-[13.5px] sm:text-base md:text-lg w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-8 sm:mt-14 mb-[5dvh] sm:mb-16 leading-[1.9] flex flex-wrap justify-center gap-x-[0.35em] font-medium">
-            {isLowPerf ? (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, delay: baseDelay + 0.9 }}
-              >
-                {subtitleSegments.map((seg, si) => {
-                  if (!seg.bold && !seg.card && !seg.whiteCard) return <span key={si}>{seg.text}</span>;
-                  const cls = [
-                    seg.bold ? 'font-bold text-white' : '',
-                    seg.card ? 'word-card' : '',
-                    seg.whiteCard ? 'word-card-white' : '',
-                  ].filter(Boolean).join(' ');
-                  return <span key={si} className={cls}>{seg.text}</span>;
-                })}
-              </motion.span>
-            ) : (
-              (() => {
-                // Count total words for mid-pause calculation
-                let totalWords = 0;
-                subtitleSegments.forEach(seg => { totalWords += seg.text.split(' ').filter(Boolean).length; });
-                const midPoint = Math.ceil(totalWords / 2);
-                const midPause = 0.6; // seconds to pause between halves
-
-                let wordIndex = 0;
-                return subtitleSegments.map((seg, si) => {
-                  if (seg.bold || seg.card || seg.whiteCard) {
-                    const wordsInSeg = seg.text.split(' ').length;
-                    const pastMid = wordIndex >= midPoint;
-                    const delay = baseDelay + 0.9 + wordIndex * 0.04 + (pastMid ? midPause : 0);
-                    wordIndex += wordsInSeg;
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={lang}
+              initial={{ opacity: 0, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
+              className="text-muted-foreground text-[14px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-8 sm:mt-14 mb-[5dvh] sm:mb-16 leading-[1.6] flex flex-wrap justify-center gap-x-[0.35em] gap-y-3 font-medium tracking-wide"
+            >
+              {isLowPerf ? (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: isHeroLoaded ? 0 : baseDelay + 0.9 }}
+                >
+                  {subtitleSegments.map((seg, si) => {
+                    if (!seg.bold && !seg.card && !seg.whiteCard) return <span key={si}>{seg.text}</span>;
                     const cls = [
                       seg.bold ? 'font-bold text-white' : '',
                       seg.card ? 'word-card' : '',
                       seg.whiteCard ? 'word-card-white' : '',
                     ].filter(Boolean).join(' ');
-                    return (
-                      <motion.span
-                        key={`seg-${si}`}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        className={cls}
-                      >
-                        {seg.text}
-                      </motion.span>
-                    );
-                  }
-                  return seg.text.split(' ').filter(Boolean).map((word, wi) => {
-                    const pastMid = wordIndex >= midPoint;
-                    const delay = baseDelay + 0.9 + wordIndex * 0.04 + (pastMid ? midPause : 0);
-                    wordIndex++;
-                    return (
-                      <motion.span
-                        key={`w-${si}-${wi}`}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-                      >
-                        {word}
-                      </motion.span>
-                    );
+                    return <span key={si} className={`${cls} inline-block align-middle`}>{seg.text}</span>;
+                  })}
+                </motion.span>
+              ) : (
+                (() => {
+                  // Count total words for mid-pause calculation
+                  let totalWords = 0;
+                  subtitleSegments.forEach(seg => { totalWords += seg.text.split(' ').filter(Boolean).length; });
+                  const midPoint = Math.ceil(totalWords / 2);
+                  const midPause = 0.6; // seconds to pause between halves
+
+                  let wordIndex = 0;
+                  return subtitleSegments.map((seg, si) => {
+                    if (seg.bold || seg.card || seg.whiteCard) {
+                      const wordsInSeg = seg.text.split(' ').length;
+                      const pastMid = wordIndex >= midPoint;
+                      const delay = (isHeroLoaded ? 0.05 : baseDelay + 0.9) + wordIndex * 0.04 + (pastMid ? midPause : 0);
+                      wordIndex += wordsInSeg;
+                      const cls = [
+                        seg.bold ? 'font-bold text-white' : '',
+                        seg.card ? 'word-card' : '',
+                        seg.whiteCard ? 'word-card-white' : '',
+                      ].filter(Boolean).join(' ');
+                      return (
+                        <motion.span
+                          key={`seg-${si}`}
+                          layout
+                          initial={{ opacity: 0, y: 10, filter: 'blur(10px)', scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                          transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+                          className={`${cls} inline-block align-middle`}
+                        >
+                          {seg.text}
+                        </motion.span>
+                      );
+                    }
+                    return seg.text.split(' ').filter(Boolean).map((word, wi) => {
+                      const pastMid = wordIndex >= midPoint;
+                      const delay = (isHeroLoaded ? 0.05 : baseDelay + 0.9) + wordIndex * 0.04 + (pastMid ? midPause : 0);
+                      wordIndex++;
+                      return (
+                        <motion.span
+                          key={`w-${si}-${wi}`}
+                          layout
+                          initial={{ opacity: 0, y: 10, filter: 'blur(8px)', scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+                          transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+                          className="inline-block align-middle"
+                        >
+                          {word}
+                        </motion.span>
+                      );
+                    });
                   });
-                });
-              })()
-            )}
-          </motion.p>
+                })()
+              )}
+            </motion.p>
+          </AnimatePresence>
 
           {/* CTA buttons — slide up with spring */}
           <motion.div
