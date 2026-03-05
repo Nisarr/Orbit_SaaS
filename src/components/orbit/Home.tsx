@@ -250,7 +250,7 @@ export function Home() {
                   initial={{ opacity: 0, y: -12, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: baseDelay + 0.3 }}
-                  className="flex sm:hidden flex-col items-center w-full max-w-[95%] mx-auto mb-10 -mt-16 font-playfair italic font-bold text-[14px] tracking-wide relative"
+                  className="flex sm:hidden flex-col items-center w-full max-w-[95%] mx-auto mb-10 -mt-6 font-playfair italic font-bold text-[14px] tracking-wide relative"
                 >
                   {/* Fusion Glow Effect (behind intersection) - Moved down to overlap */}
                   <motion.div
@@ -395,7 +395,7 @@ export function Home() {
             initial={{ opacity: 0, filter: 'blur(10px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-            className="text-muted-foreground text-[12.5px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-4 sm:mt-6 mb-4 sm:mb-6 leading-[1.6] flex flex-wrap justify-center gap-x-[0.4em] gap-y-[0.4rem] sm:gap-y-3 font-medium tracking-wide"
+            className="text-muted-foreground text-[12.5px] sm:text-base md:text-lg lg:text-xl w-full max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 mt-4 sm:mt-6 mb-4 sm:mb-6 leading-[1.6] flex flex-wrap justify-center gap-x-[0.4em] gap-y-[0.4rem] sm:gap-y-3 font-medium tracking-wide italic"
           >
             {(
               (() => {
@@ -458,7 +458,7 @@ export function Home() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 60, damping: 16, delay: baseDelay + 1.6 }}
-          className="flex flex-row w-full justify-between sm:justify-center sm:w-auto gap-4 sm:gap-10 items-center px-1 sm:px-0 mt-4 sm:mt-8 lg:mt-16"
+          className="flex flex-row w-full justify-between sm:justify-center sm:w-auto gap-4 sm:gap-10 items-center px-1 sm:px-0 mt-12 sm:mt-12 lg:mt-16"
         >
           {/* Relative Container for Dropdown */}
           <div className="relative w-auto sm:w-auto">
