@@ -95,6 +95,19 @@ function PublicSite() {
     return () => clearTimeout(timer);
   }, [isLoaded]);
 
+  // After deferred sections mount, scroll to the URL hash if present (e.g. /#services)
+  useEffect(() => {
+    if (!isLoaded) return;
+    const hash = window.location.hash;
+    if (!hash || hash === '#hero') return;
+    // Small delay to let React paint the newly mounted sections
+    const timer = setTimeout(() => {
+      const el = document.getElementById(hash.substring(1));
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [isLoaded]);
+
 
   // Defer chatbot loading until well after page is loaded
   useEffect(() => {

@@ -337,6 +337,33 @@
   }
 }
 
+/* Starfield pause — freezes all child animations in their current frame */
+.starfield-paused,
+.starfield-paused * {
+  animation-play-state: paused !important;
+}
+/* Exception: let active comets/shooting stars finish their flight */
+.starfield-paused .starfield-shooting,
+.starfield-paused .starfield-shooting * {
+  animation-play-state: running !important;
+}
+
+/* Language toggle glow animation */
+@keyframes lang-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.15), 0 0 4px rgba(16, 185, 129, 0.1);
+    border-color: rgba(42, 42, 62, 1);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), 0 0 8px rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.6);
+  }
+}
+
+.language-toggle-glow {
+  animation: lang-glow 3s ease-in-out infinite;
+}
+
 /* Nebula pulse — opacity only (compositor-friendly, no layout) */
 @keyframes nebulaBreath {
 

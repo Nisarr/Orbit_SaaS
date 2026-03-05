@@ -61,8 +61,10 @@ const ZOOM_STARS_1 = generateStars(Math.ceil(NUM_STARS / 2));
 const ZOOM_STARS_2 = generateStars(Math.floor(NUM_STARS / 2));
 
 export function MobileStarField() {
+    const rootRef = useRef<HTMLDivElement>(null);
     const shootingContainerRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+    const isPausedRef = useRef(false);
     // Track last spawn side for alternating direction
     const lastStarSide = useRef<number>(0); // 0=top, 1=left, 2=right
 
@@ -449,8 +451,63 @@ export function MobileStarField() {
         };
     }, [runSequence]);
 
+    // ── Pause/Resume: freeze animations when hero is not visible or tab is hidden ──
+    const setPaused = useCallback((paused: boolean) => {
+        if (paused === isPausedRef.current) return;
+        isPausedRef.current = paused;
+        const root = rootRef.current;
+        if (!root) return;
+        if (paused) {
+            root.classList.add('starfield-paused');
+            // Stop sequencer so no new shooting stars/collisions are spawned
+            if (sequencerRef.current) { clearTimeout(sequencerRef.current); sequencerRef.current = undefined; }
+        } else {
+            root.classList.remove('starfield-paused');
+            // Restart sequencer if it was stopped
+            if (!sequencerRef.current) {
+                sequencerRef.current = setTimeout(runSequence, 500);
+            }
+        }
+    }, [runSequence]);
+
+    // Intersection Observer: pause when hero section is not visible
+    useEffect(() => {
+        const hero = document.getElementById('hero');
+        if (!hero) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // Don't resume if tab is hidden
+                if (document.hidden) return;
+                setPaused(!entry.isIntersecting);
+            },
+            { threshold: 0.05 } // trigger when even 5% of hero is visible
+        );
+        observer.observe(hero);
+        return () => observer.disconnect();
+    }, [setPaused]);
+
+    // Page Visibility: pause when tab is hidden (user switches apps)
+    useEffect(() => {
+        const onVisChange = () => {
+            if (document.hidden) {
+                setPaused(true);
+            } else {
+                // Only resume if hero is actually visible
+                const hero = document.getElementById('hero');
+                if (hero) {
+                    const rect = hero.getBoundingClientRect();
+                    const heroVisible = rect.bottom > 0 && rect.top < window.innerHeight;
+                    setPaused(!heroVisible);
+                }
+            }
+        };
+        document.addEventListener('visibilitychange', onVisChange);
+        return () => document.removeEventListener('visibilitychange', onVisChange);
+    }, [setPaused]);
+
     return (
         <div
+            ref={rootRef}
             className="fixed inset-0 w-full h-[100dvh] pointer-events-none select-none"
             style={{ zIndex: -49, contain: 'layout style' }}
             aria-hidden
@@ -578,7 +635,7 @@ export function MobileStarField() {
             )}
 
             {/* ── 5. Dynamic Shooting Stars (DOM-direct, zero re-renders) ── */}
-            <div ref={shootingContainerRef} className="absolute inset-0" />
+            <div ref={shootingContainerRef} className="absolute inset-0 starfield-shooting" />
         </div>
     );
 }

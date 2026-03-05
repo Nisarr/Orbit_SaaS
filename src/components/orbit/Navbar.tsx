@@ -341,7 +341,7 @@ export function Navbar() {
                 )}
               </AnimatePresence>
 
-              <button onClick={toggleLang} className="bg-[#12121a] border border-[#2a2a3e] px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-foreground hover:bg-[#1a1a2e] gentle-animation flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium cursor-pointer shrink-0">
+              <button onClick={toggleLang} className="bg-[#12121a] border border-[#2a2a3e] px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-foreground hover:bg-[#1a1a2e] gentle-animation flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium cursor-pointer shrink-0 language-toggle-glow">
                 <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {lang === 'en' ? 'বাং' : 'EN'}
               </button>

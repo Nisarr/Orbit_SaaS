@@ -303,7 +303,7 @@ export function Home() {
                       duration: 0.8,
                       ease: [0.25, 0.46, 0.45, 0.94],
                     }}
-                    className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block will-change-transform animate-text-shimmer-orbit pb-1"
+                    className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block will-change-transform pb-1"
                   >
                     {letter}
                   </motion.span>
@@ -316,7 +316,7 @@ export function Home() {
                   initial={{ opacity: 0, scale: 0.85, x: -6 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-2 sm:ml-4 animate-text-shimmer-saas pb-1"
+                  className="text-[clamp(3.2rem,13vw,5.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] font-poppins font-black tracking-tight inline-block ml-2 sm:ml-4 pb-1"
                 >
                   SaaS
                 </motion.span>
@@ -331,7 +331,7 @@ export function Home() {
                   initial={{ opacity: 0, filter: 'blur(10px)' }}
                   animate={{ opacity: 1, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-                  className={`animate-title-breath mt-6 sm:mt-8 md:mt-12 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
+                  className={`${isInHero ? 'animate-title-breath' : ''} mt-6 sm:mt-8 md:mt-12 text-[1.5rem] leading-[1.2] sm:text-3xl md:text-4xl lg:text-[3rem] xl:text-5xl font-lobster tracking-normal px-1 sm:px-4 flex flex-wrap justify-center gap-x-[0.25em] gap-y-2 ${lang === 'bn' ? 'font-bengali font-bold' : ''}`}
                   style={{ color: titleColor }}
                 >
                   {isLowPerf ? (
