@@ -213,7 +213,7 @@ export function Home() {
                   initial={{ opacity: 0, y: -12, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: baseDelay + 0.3 }}
-                  className="flex sm:hidden flex-col items-center w-full max-w-[95%] mx-auto mb-2 mt-2 font-playfair italic font-bold text-[14px] tracking-wide relative"
+                  className="flex sm:hidden flex-col items-center w-full max-w-[95%] mx-auto mb-2 -mt-4 font-playfair italic font-bold text-[14px] tracking-wide relative"
                 >
                   {/* Fusion Glow Effect (behind intersection) - Moved down to overlap */}
                   <motion.div
